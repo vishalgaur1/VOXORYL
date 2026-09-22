@@ -19,6 +19,8 @@
   ·
   <a href="https://vishalgaur1.github.io/VOXORYL/">Site</a>
   ·
+  <a href="https://github.com/vishalgaur1/VOXORYL/wiki">Wiki</a>
+  ·
   <a href="docs/PACKAGES.md">Docker package</a>
   ·
   <em>vox-OR-ill</em>
