@@ -1,14 +1,40 @@
-# VOXORYL
+# VOXORYL (Voxy)
 
-**VOXORYL** (*vox-OR-ill*) — Voice Operating eXecutive · On-device Reasoning that Yields Local action.
+<p align="center">
+  <img src="voxoryl/static/voxoryl-icon.svg" alt="VOXORYL / Voxy — local PC voice assistant" width="96" height="96" />
+</p>
 
-Official name **VOXORYL**; short name **Voxy** (wake: **Hey Voxy**).
+**A voice assistant that runs on your PC** — you talk, it opens apps, controls Chrome/YouTube, and helps with your computer. Works mostly offline.
 
-Local always-on assistant (Ollama by default) with a voice widget, council, tools, private knowledge log, and auto mind map.
+| | |
+|---|---|
+| **Pronunciation** | *vox-OR-ill* |
+| **Short name** | **Voxy** (say **“Hey Voxy”** to wake) |
+| **Repo** | https://github.com/vishalgaur1/VOXORYL |
 
-## What it can do
+Open-source **local voice assistant** / **PC AI companion** / **on-device voice agent** for **desktop voice control** on **Windows** and **Mac** — not a cloud chatbot with optional plugins.
 
-VOXORYL is a **desktop companion**, not a chat site with optional plugins. Talk to it, keep context private on disk, and — when you enable it — let it look at the screen and act. Depth varies by OS and flags; the product is designed to **degrade honestly** instead of pretending.
+## Find this project
+
+Search engines and LLMs often miss brand-new repos or autocorrect **VOXORYL** → Wikoryl / voxel. Use the **exact URL**:
+
+**https://github.com/vishalgaur1/VOXORYL**
+
+Also search: `Voxy` · `VOXORYL` · `vishalgaur1` · `local voice assistant Windows` · `open source voice assistant Mac`
+
+More tips: [docs/FIND.md](docs/FIND.md)
+
+## What it does (plain English)
+
+- **Talk to your computer** with a voice orb on the desktop
+- **Open apps** (Chrome, Notepad, VS Code/Cursor, Spotify, and more)
+- **Control Chrome & YouTube** — new tabs, URLs, play the Nth video
+- **Optional screen control** — see the screen and click/type when you turn it on
+- **Mostly offline** — local models via [Ollama](https://ollama.com) by default; optional cloud for chat only
+- **Private on disk** — your knowledge and memory stay in `data/` (never shipped in clones)
+- **Doctor / Safe Mode** — checks health and can block risky actions while you diagnose
+
+Depth varies by OS and flags; the product is designed to **degrade honestly** instead of pretending.
 
 ### Voice companion
 
@@ -186,7 +212,7 @@ See [`.env.example`](.env.example) for the full list.
 voxoryl/           # Python package (API, agents, tools, static UI)
 scripts/           # Launchers, probes, packaging
 setup/             # Example configs + bootstrap templates
-docs/              # PRD and product docs
+docs/              # PRD, find/share notes, product docs
 tests/             # Smoke tests
 .github/workflows/ # Release zip scaffold
 .env.example       # Required keys (placeholders only)
@@ -236,6 +262,11 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install-windows.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\install-desktop-shortcut.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\register-autostart-windows.ps1
 ```
+
+## Name meaning (optional)
+
+**VOXORYL** expands to *Voice Operating eXecutive · On-device Reasoning that Yields Local action*.  
+Day-to-day, call it **Voxy** — a local PC voice assistant.
 
 ## License
 
