@@ -3,21 +3,21 @@ VOXORYL — Licensing summary (plain English)
 
 Copyright (c) 2026 Vishal Gaur
 
-This software (VOXORYL) is dual-licensed by intent:
+Dual-licensed by intent:
 
-  • Non-commercial use — Free under the PolyForm Noncommercial
-    License 1.0.0 below. You may view, fork, improve, and contribute
-    for personal, educational, research, hobby, charitable, and other
-    noncommercial purposes as defined in that license.
+  • Non-commercial — Free under PolyForm Noncommercial License 1.0.0
+    (personal, educational, research, hobby, charitable, and other
+    noncommercial purposes as defined in that license).
 
-  • Commercial use — Not covered by PolyForm Noncommercial.
-    Selling VOXORYL, offering it as SaaS, embedding it in paid
-    products/services, or using it for internal business purposes
-    beyond personal/noncommercial use requires a separate paid
-    commercial license from the copyright holder.
+  • Commercial — Not covered by PolyForm Noncommercial. Selling VOXORYL,
+    offering it as SaaS, embedding it in paid products/services, or
+    internal business use beyond personal/noncommercial requires a
+    separate paid commercial license.
 
-CONTACT: vishalgaur2002@gmail.com
-  (Commercial license inquiries.)
+CONTACT (commercial): vishalgaur2002@gmail.com
+
+Plain-English overview for humans: docs/LICENSE-SUMMARY.md
+Commercial inquiries: COMMERCIAL_LICENSE.md
 
 Required Notice: Copyright 2026 Vishal Gaur (https://github.com/vishalgaur1/VOXORYL)
 

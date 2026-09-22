@@ -291,6 +291,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.
 
 ## License
 
-Non-commercial use is free under [PolyForm Noncommercial 1.0.0](LICENSE).  
-Commercial use requires a paid license — contact **vishalgaur2002@gmail.com**  
-(see [`LICENSE`](LICENSE) and [`COMMERCIAL_LICENSE.md`](COMMERCIAL_LICENSE.md)).
+**Non-commercial use is free** under [PolyForm Noncommercial 1.0.0](LICENSE) — personal, hobby, research, education, and open-source contribution.
+
+**Commercial use** (selling VOXORYL, SaaS, embedding in paid products, or internal business use beyond personal/noncommercial) needs a separate paid license — contact **vishalgaur2002@gmail.com**.
+
+Plain-English overview: [docs/LICENSE-SUMMARY.md](docs/LICENSE-SUMMARY.md) · Full legal text: [`LICENSE`](LICENSE) · Commercial: [`COMMERCIAL_LICENSE.md`](COMMERCIAL_LICENSE.md)
