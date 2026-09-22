@@ -1,0 +1,17 @@
+---
+description: Pre-push checks for VOXORYL GitHub publishes (secrets, branding, commit quality)
+alwaysApply: true
+---
+
+# VOXORYL GitHub push policy
+
+Official names: **VOXORYL** (full), **Voxy** / **VOXY** (short). Pronunciation: **vox-OR-ill**. Expansion: Voice Operating eXecutive · On-device Reasoning that Yields Local action.
+
+Before any `git push` to GitHub for this repo, verify:
+
+1. **No secrets** — do not push `.env`, keys, credentials, or personal/runtime data under `data/` (beyond allowed placeholders).
+2. **No old brand** — staged files and the commit message must not contain "Jarvis" or other retired product names.
+3. **Meaningful commits** — messages are feature/fix oriented (what was introduced or fixed), not micro-renames (`changed name`, `typo`, `wip`) unless the user explicitly overrides.
+4. **Squash WIP** — prefer one meaningful commit for related tiny changes before push.
+
+If any check fails → **ASK the user**: “Conditions don’t match (list them). Still push?”

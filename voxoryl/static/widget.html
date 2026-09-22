@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VOXORYL</title>
+  <link rel="icon" href="/assets/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png" />
+  <link rel="icon" type="image/svg+xml" href="/assets/voxoryl-icon.svg" />
+  <link rel="apple-touch-icon" href="/assets/voxoryl-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Sora:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/widget.css" />
+  <style>
+    /* Instant boot paint before stylesheet (Edge --app cold start) */
+    html, body { margin: 0; height: 100%; background: #f7f9fc; color: #1a2332; }
+    #bootOverlay.is-booting {
+      position: fixed; inset: 0; z-index: 40; display: grid; place-items: center;
+      background: linear-gradient(165deg, #f7f9fc 0%, #eef3fa 45%, #e8eef8 100%);
+    }
+  </style>
+</head>
+<body class="is-booting">
+  <div id="bootOverlay" class="boot is-booting" role="status" aria-live="polite" aria-busy="true">
+    <div class="boot__stage">
+      <p class="boot__kicker">Your AI companion</p>
+      <h1 class="boot__brand">VOXORYL</h1>
+      <div class="boot__orb" aria-hidden="true">
+        <span class="boot__core"></span>
+        <span class="boot__ring boot__ring--a"></span>
+        <span class="boot__halo"></span>
+      </div>
+      <p id="bootPhase" class="boot__phase">Starting core…</p>
+      <div class="boot__track" aria-hidden="true">
+        <div id="bootFill" class="boot__fill"></div>
+      </div>
+      <div id="bootError" class="boot__error" hidden>
+        <p id="bootErrorText">Couldn't reach the Voxoryl server.</p>
+        <button type="button" id="bootRetry" class="boot__retry">Retry</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="atmosphere" aria-hidden="true">
+    <div class="atmosphere__wash"></div>
+    <div class="atmosphere__waves"></div>
+    <div class="atmosphere__glow atmosphere__glow--a"></div>
+    <div class="atmosphere__glow atmosphere__glow--b"></div>
+  </div>
+
+  <div class="shell" id="appShell" aria-hidden="true">
+    <header class="titlebar">
+      <div class="titlebar__brand">
+        <svg class="titlebar__logo" width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
+          <rect x="0" y="4" width="2" height="6" rx="1" fill="#4a8cff"/>
+          <rect x="3.5" y="1" width="2" height="12" rx="1" fill="#5b9dff"/>
+          <rect x="7" y="3" width="2" height="8" rx="1" fill="#6a8ef5"/>
+          <rect x="10.5" y="0" width="2" height="14" rx="1" fill="#7b7ef0"/>
+          <rect x="14" y="5" width="2" height="4" rx="1" fill="#8b6ef0"/>
+        </svg>
+        <span class="titlebar__name">VOXORYL</span>
+      </div>
+      <div id="statusPill" class="status-pill" data-phase="idle" aria-live="polite">
+        <span class="status-pill__dot" aria-hidden="true"></span>
+        <span id="statusPillLabel">Idle</span>
+      </div>
+    </header>
+
+    <section class="hero-copy">
+      <p class="hero-copy__kicker">Your AI companion</p>
+      <h1 class="hero-copy__brand">
+        <span class="hero-copy__brand-base">VOXOR</span><span class="hero-copy__brand-accent">YL</span>
+      </h1>
+      <p class="hero-copy__tagline">Always here. Just say the word.</p>
+    </section>
+
+    <section class="orb-stage" aria-label="Voice orb">
+      <div class="orb-atmosphere" aria-hidden="true"></div>
+      <button id="orb" class="orb idle" type="button" aria-label="Tap to talk">
+        <canvas id="orbCanvas" width="360" height="360" aria-hidden="true"></canvas>
+        <span class="orb-glow" aria-hidden="true"></span>
+        <span class="orb-ring" aria-hidden="true"></span>
+      </button>
+      <p id="state" class="state-label" data-phase="idle">Idle</p>
+      <div class="phase-wave" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+      </div>
+      <div id="progressFill" class="sr-only" aria-hidden="true"></div>
+      <!-- Keep transport ids for voice pipeline sync; visually replaced by voice pill -->
+      <div class="transport sr-only" role="group" aria-label="Voice transport">
+        <button type="button" id="stopListenBtn" hidden>Stop</button>
+        <button type="button" id="listenBtn">Start</button>
+      </div>
+    </section>
+
+    <div class="voice-block">
+      <div id="voicePill" class="voice-pill" data-phase="idle">
+        <button type="button" id="micBtn" class="voice-pill__mic" aria-label="Start listening" title="Start listening">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <rect x="6.5" y="2" width="5" height="9" rx="2.5" fill="currentColor"/>
+            <path d="M4.5 8.5a4.5 4.5 0 0 0 9 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M9 13v2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button type="button" id="voiceHintBtn" class="voice-pill__hint" aria-label="Start listening">
+          Speak naturally...
+        </button>
+        <button type="button" id="keyboardBtn" class="voice-pill__key" aria-label="Type instead" title="Type a message" aria-expanded="false" aria-controls="typeForm">
+          <svg width="18" height="14" viewBox="0 0 18 14" fill="none" aria-hidden="true">
+            <rect x="0.75" y="0.75" width="16.5" height="12.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M3.5 4h1.2M6.5 4h1.2M9.5 4h1.2M12.5 4h2M3.5 7h1.2M6.5 7h1.2M9.5 7h1.2M12.5 7h2M5.5 10h7" stroke="currentColor" stroke-width="1.35" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <form id="typeForm" class="type-form" hidden>
+        <input id="typed" placeholder="Type a message…" autocomplete="off" />
+        <button type="submit">Send</button>
+      </form>
+    </div>
+
+    <nav class="quick-actions" aria-label="Quick actions">
+      <button type="button" class="quick-action" data-q="Look at my screen and tell me what I'm doing" title="Look at your screen">
+        <span class="quick-action__icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <rect x="2.5" y="3.5" width="17" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M7 18.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M11 15.5v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="quick-action__label">Computer</span>
+      </button>
+      <button type="button" class="quick-action" data-q="What apps and windows are open right now? Summarize them briefly." title="Apps and windows">
+        <span class="quick-action__icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <rect x="2.5" y="2.5" width="7" height="7" rx="1.75" stroke="currentColor" stroke-width="1.5"/>
+            <rect x="12.5" y="2.5" width="7" height="7" rx="1.75" stroke="currentColor" stroke-width="1.5"/>
+            <rect x="2.5" y="12.5" width="7" height="7" rx="1.75" stroke="currentColor" stroke-width="1.5"/>
+            <rect x="12.5" y="12.5" width="7" height="7" rx="1.75" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+        </span>
+        <span class="quick-action__label">Apps</span>
+      </button>
+      <button type="button" id="askQuickBtn" class="quick-action" title="Ask Voxoryl">
+        <span class="quick-action__icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <path d="M11 2.5l1.15 5.1L17 8.5l-4.85 1.9L11 15.5l-1.15-5.1L5 8.5l4.85-1.9L11 2.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+            <path d="M17.5 13.5l.55 2.2 2.2.55-2.2.55-.55 2.2-.55-2.2-2.2-.55 2.2-.55.55-2.2z" fill="currentColor"/>
+          </svg>
+        </span>
+        <span class="quick-action__label">Ask</span>
+      </button>
+    </nav>
+
+    <footer class="footer">
+      <button type="button" id="settingsBtn" class="footer__gear" aria-label="Settings" title="Settings">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <path d="M7.2 1.8h3.6l.35 1.55a5.4 5.4 0 0 1 1.35.78l1.55-.45 1.8 3.12-1.2 1.1c.08.36.12.73.12 1.1s-.04.74-.12 1.1l1.2 1.1-1.8 3.12-1.55-.45a5.4 5.4 0 0 1-1.35.78L10.8 16.2H7.2l-.35-1.55a5.4 5.4 0 0 1-1.35-.78l-1.55.45L2.15 11.2l1.2-1.1A5.6 5.6 0 0 1 3.23 9c0-.37.04-.74.12-1.1l-1.2-1.1 1.8-3.12 1.55.45a5.4 5.4 0 0 1 1.35-.78L7.2 1.8z" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/>
+          <circle cx="9" cy="9" r="2.2" stroke="currentColor" stroke-width="1.35"/>
+        </svg>
+      </button>
+      <p class="footer__mark">Smarter <span>Together</span></p>
+    </footer>
+
+    <!-- Hidden: chat log still fed by voice pipeline; Council/Talk live in settings -->
+    <div class="pipeline-hidden" hidden aria-hidden="true">
+      <div id="conversation" class="conversation is-collapsed">
+        <button type="button" id="conversationToggle" aria-expanded="false" aria-controls="conversationBody"></button>
+        <span id="conversationMeta"></span>
+        <button type="button" id="clearChatBtn">Clear</button>
+        <div id="conversationBody">
+          <div id="chatLog" class="chat-log" role="log" aria-live="polite"></div>
+        </div>
+      </div>
+      <button type="button" id="modeTalk" class="mode-btn active" data-mode="talk">Talk</button>
+      <button type="button" id="modeCouncil" class="mode-btn" data-mode="council">Council</button>
+      <p id="modeHint"></p>
+      <button type="button" id="menuBtn" aria-expanded="false" aria-controls="overflowMenu"></button>
+      <div id="overflowMenu" hidden>
+        <button type="button" id="openDashboardBtn">Open dashboard</button>
+        <button type="button" id="reloadUiBtn">Reload widget</button>
+        <button type="button" id="pinHint">Pin tip</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="settingsSheet" class="sheet" hidden>
+    <div class="sheet__backdrop" data-close-sheet></div>
+    <div class="sheet__panel" role="dialog" aria-labelledby="settingsTitle">
+      <div class="sheet__head">
+        <h2 id="settingsTitle">Settings</h2>
+        <button type="button" class="icon-btn" data-close-sheet aria-label="Close settings">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M4 4l8 8M12 4L4 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="sheet__body">
+        <div class="infer-block">
+          <p class="infer-block__title">Brain</p>
+          <div class="infer-seg" role="group" aria-label="Local or Cloud brain">
+            <button type="button" id="inferLocal" class="infer-seg__btn active" data-mode="local">
+              Local
+              <small>Private · on this PC</small>
+            </button>
+            <button type="button" id="inferCloud" class="infer-seg__btn" data-mode="cloud">
+              Cloud
+              <small>Faster · free API</small>
+            </button>
+          </div>
+          <p id="inferHint" class="infer-hint">Uses Ollama on this machine. Personal data stays local.</p>
+        </div>
+
+        <div class="infer-block">
+          <p class="infer-block__title">Mode</p>
+          <div class="infer-seg" role="group" aria-label="Talk or Council">
+            <button type="button" id="settingsModeTalk" class="infer-seg__btn active" data-mode="talk">
+              Talk
+              <small>Direct voice</small>
+            </button>
+            <button type="button" id="settingsModeCouncil" class="infer-seg__btn" data-mode="council">
+              Council
+              <small>Weigh harder calls</small>
+            </button>
+          </div>
+        </div>
+
+        <label class="toggle-row" title="Keep listening after each reply">
+          <span class="toggle-row__copy">
+            <strong>Keep talking</strong>
+            <small>Stay in conversation after each reply</small>
+          </span>
+          <input type="checkbox" id="continuousTalk" class="toggle" checked />
+        </label>
+        <label class="toggle-row" title="Parakeet ASR when installed — clearer than browser speech">
+          <span class="toggle-row__copy">
+            <strong>Accurate mic</strong>
+            <small>Local ASR when available</small>
+          </span>
+          <input type="checkbox" id="accurateMic" class="toggle" />
+        </label>
+
+        <div class="device-block">
+          <p class="device-block__title">Audio devices</p>
+          <label class="device-field" for="micSelect">
+            <span class="device-field__label">
+              <strong>Microphone</strong>
+              <small>Where Voxoryl listens from</small>
+            </span>
+            <select id="micSelect" aria-label="Microphone">
+              <option value="">System default</option>
+            </select>
+          </label>
+          <label class="device-field" for="speakerSelect">
+            <span class="device-field__label">
+              <strong>Speaker</strong>
+              <small>Where Voxoryl talks</small>
+            </span>
+            <select id="speakerSelect" aria-label="Speaker">
+              <option value="">System default</option>
+            </select>
+          </label>
+          <p id="deviceHint" class="device-hint">Allow mic access once to show device names.</p>
+          <button type="button" id="refreshDevicesBtn" class="device-refresh">Refresh devices</button>
+        </div>
+
+        <div class="device-block">
+          <p class="device-block__title">More</p>
+          <label class="device-field" for="langSelect">
+            <span class="device-field__label">
+              <strong>Language</strong>
+              <small>Voice recognition language</small>
+            </span>
+            <select id="langSelect" aria-label="Language">
+              <option value="en">EN</option>
+              <option value="hi">HI</option>
+              <option value="es">ES</option>
+              <option value="fr">FR</option>
+              <option value="de">DE</option>
+            </select>
+          </label>
+          <div class="settings-links">
+            <button type="button" id="settingsOpenDash" class="device-refresh">Open dashboard</button>
+            <button type="button" id="settingsReloadUi" class="device-refresh">Reload widget</button>
+            <button type="button" id="settingsClearChat" class="device-refresh">Clear conversation</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/assets/orb.js"></script>
+  <script src="/assets/widget.js"></script>
+</body>
+</html>

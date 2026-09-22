@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "note": "Heuristic flags for common delivery/junk items — not medical advice. Local-only.",
+  "compounds": {
+    "trans_fat": {
+      "label": "industrial trans fats",
+      "why": "Linked to heart disease risk when eaten often.",
+      "aliases": ["vanaspati", "partially hydrogenated", "hydrogenated vegetable"]
+    },
+    "excess_sodium": {
+      "label": "very high sodium",
+      "why": "Frequent high-salt meals raise blood-pressure load.",
+      "aliases": ["msg heavy", "extra salt"]
+    },
+    "added_sugar": {
+      "label": "high added sugar",
+      "why": "Spikes glucose; easy to overshoot daily sugar budget.",
+      "aliases": ["high fructose", "corn syrup", "sweetened"]
+    },
+    "acrylamides": {
+      "label": "acrylamide (fried/charred starch)",
+      "why": "Forms in high-heat fries/chips; best as occasional treat.",
+      "aliases": ["deep fried starch"]
+    },
+    "nitrates": {
+      "label": "processed-meat nitrates/nitrites",
+      "why": "Processed meats often carry preservatives tied to long-term risk when habitual.",
+      "aliases": ["sodium nitrite", "cured meat"]
+    },
+    "palm_oil_heavy": {
+      "label": "heavy refined palm oil / frying oil reuse",
+      "why": "Common in cheap fried snacks; quality varies a lot by kitchen.",
+      "aliases": ["reused oil", "deep fry oil"]
+    },
+    "caffeine_sugar_stack": {
+      "label": "caffeine + sugar stack",
+      "why": "Energy drinks / sweet coffee stacks can wreck sleep and crash energy.",
+      "aliases": ["energy drink", "cold coffee sugar"]
+    },
+    "ultra_processed": {
+      "label": "ultra-processed additives pack",
+      "why": "Many emulsifiers/colors/preservatives in packaged snacks — fine rarely, rough daily.",
+      "aliases": ["emulsifier", "artificial color", "preservative"]
+    }
+  },
+  "item_rules": [
+    {"match": ["french fries", "fries", "peri peri fries", "loaded fries"], "flags": ["acrylamides", "palm_oil_heavy", "excess_sodium"]},
+    {"match": ["fried chicken", "chicken burger", "zinger", "nuggets"], "flags": ["palm_oil_heavy", "excess_sodium"]},
+    {"match": ["pizza", "cheese burst", "dominos", "pizza hut"], "flags": ["excess_sodium", "trans_fat"]},
+    {"match": ["momos", "fried momo", "tandoori momo"], "flags": ["excess_sodium", "palm_oil_heavy"]},
+    {"match": ["biryani", "dum biryani"], "flags": ["excess_sodium", "palm_oil_heavy"]},
+    {"match": ["burger", "mcdonald", "kfc", "burger king", "wendy"], "flags": ["ultra_processed", "excess_sodium", "palm_oil_heavy"]},
+    {"match": ["cola", "coke", "pepsi", "thums up", "sprite", "fanta", "soft drink"], "flags": ["added_sugar"]},
+    {"match": ["milkshake", "thick shake", "oreo shake", "brownie shake"], "flags": ["added_sugar", "ultra_processed"]},
+    {"match": ["ice cream", "sundae", "gelato"], "flags": ["added_sugar"]},
+    {"match": ["chips", "lays", "kurkure", "nachos"], "flags": ["acrylamides", "excess_sodium", "ultra_processed"]},
+    {"match": ["sausage", "salami", "pepperoni", "bacon", "hot dog", "ham"], "flags": ["nitrates", "excess_sodium"]},
+    {"match": ["energy drink", "red bull", "monster", "sting"], "flags": ["caffeine_sugar_stack", "added_sugar"]},
+    {"match": ["cold coffee", "frappe", "mocha"], "flags": ["caffeine_sugar_stack", "added_sugar"]},
+    {"match": ["maggi", "instant noodles", "cup noodles"], "flags": ["excess_sodium", "ultra_processed"]},
+    {"match": ["pakora", "samosa", "kachori", "bhajiya", "vada pav"], "flags": ["palm_oil_heavy", "acrylamides"]},
+    {"match": ["paneer tikka", "butter chicken", "makhani", "malai"], "flags": ["excess_sodium"]},
+    {"match": ["dessert", "gulab jamun", "rasmalai", "pastry", "brownie"], "flags": ["added_sugar"]}
+  ]
+}

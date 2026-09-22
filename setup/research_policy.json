@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "always_on": true,
+  "method": "Search internet first. Weight official docs/manuals highest, big reference platforms next, public chatter last (ideas only — most anecdotes are weak). Then form one conclusion.",
+  "tiers": {
+    "docs": {
+      "weight": 3.0,
+      "label": "official docs / manuals",
+      "domains": [
+        "docs.",
+        "readthedocs.io",
+        "developer.mozilla.org",
+        "learn.microsoft.com",
+        "docs.python.org",
+        "docs.oracle.com",
+        "kubernetes.io",
+        "cloud.google.com/docs",
+        "docs.aws.amazon.com",
+        "docs.github.com",
+        "support.apple.com",
+        "support.google.com",
+        "help.ubuntu.com",
+        "man7.org",
+        "ietf.org",
+        "rfc-editor.org",
+        "w3.org",
+        "nist.gov",
+        "gov.in",
+        ".gov/"
+      ],
+      "query_hints": [
+        "official documentation",
+        "manual",
+        "user guide",
+        "reference"
+      ]
+    },
+    "reference": {
+      "weight": 2.0,
+      "label": "big reference platforms",
+      "domains": [
+        "wikipedia.org",
+        "stackoverflow.com",
+        "stackexchange.com",
+        "superuser.com",
+        "serverfault.com",
+        "askubuntu.com",
+        "developer.mozilla.org",
+        "github.com",
+        "gitlab.com",
+        "arxiv.org",
+        "pubmed.ncbi.nlm.nih.gov",
+        "who.int",
+        "cdc.gov",
+        "nih.gov"
+      ],
+      "query_hints": [
+        "site:wikipedia.org OR site:stackoverflow.com OR site:developer.mozilla.org"
+      ]
+    },
+    "community": {
+      "weight": 0.35,
+      "label": "public discussion (anecdotal — discount heavily)",
+      "domains": [
+        "reddit.com",
+        "quora.com",
+        "medium.com",
+        "dev.to",
+        "news.ycombinator.com",
+        "discourse.",
+        "forum.",
+        "community."
+      ],
+      "query_hints": [
+        "site:reddit.com",
+        "how people fixed"
+      ],
+      "caution": "Use for failure modes and workarounds only. Do NOT treat as ground truth — many posters are wrong or incomplete."
+    },
+    "other": {
+      "weight": 0.8,
+      "label": "other web",
+      "domains": []
+    }
+  },
+  "conclusion_rules": [
+    "Prefer docs/manuals over blogs and Reddit.",
+    "Reference platforms (Wikipedia, Stack Overflow accepted answers) beat random opinions.",
+    "Community posts = signal for what breaks / what people tried — never the final authority.",
+    "If sources conflict: say so, then pick the docs-backed answer.",
+    "State confidence: high (docs agree) / medium (reference only) / low (mostly chatter)."
+  ]
+}

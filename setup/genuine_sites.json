@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "note": "Only suggest / open these (and official gov domains). Never random reseller spam.",
+  "travel": [
+    "https://www.makemytrip.com",
+    "https://www.goibibo.com",
+    "https://www.cleartrip.com",
+    "https://www.ixigo.com",
+    "https://www.expedia.com",
+    "https://www.booking.com",
+    "https://www.kayak.com",
+    "https://www.google.com/travel/flights",
+    "https://www.irctc.co.in",
+    "https://www.airindia.com",
+    "https://www.indigo.in",
+    "https://www.akasaair.com",
+    "https://www.emirates.com",
+    "https://www.qatarairways.com"
+  ],
+  "gov_in": [
+    "https://www.incometax.gov.in",
+    "https://eportal.incometax.gov.in",
+    "https://www.uidai.gov.in",
+    "https://www.passportindia.gov.in",
+    "https://www.nsdl.com",
+    "https://www.utiitsl.com",
+    "https://www.gst.gov.in",
+    "https://www.epfindia.gov.in",
+    "https://www.india.gov.in",
+    "https://www.digilocker.gov.in"
+  ],
+  "gov_us": [
+    "https://www.irs.gov",
+    "https://www.usa.gov",
+    "https://www.ssa.gov",
+    "https://travel.state.gov",
+    "https://www.cbp.gov"
+  ],
+  "fashion": [
+    "https://www.uniqlo.com",
+    "https://www.zara.com",
+    "https://www2.hm.com",
+    "https://www.nike.com",
+    "https://www.adidas.com",
+    "https://www.myntra.com",
+    "https://www.ajio.com",
+    "https://www.nordstrom.com",
+    "https://www.gap.com",
+    "https://www.levi.com",
+    "https://www.cos.com"
+  ],
+  "marketplaces": [
+    "https://www.amazon.in",
+    "https://www.amazon.com",
+    "https://www.amazon.co.uk",
+    "https://www.olx.in",
+    "https://www.flipkart.com",
+    "https://www.ebay.com",
+    "https://www.ebay.in"
+  ],
+  "blocked_patterns": [
+    "bit.ly",
+    "tinyurl",
+    "free-tickets",
+    "crack",
+    "warez",
+    "telegram.me/join"
+  ]
+}

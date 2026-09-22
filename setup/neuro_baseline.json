@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "disclaimer": "Support for getting tasks done — not diagnosis, therapy, or medical advice.",
+  "profiles": {
+    "adhd": {
+      "label": "ADHD / executive-function load",
+      "reply_rules": [
+        "Max 3 short lines. No paragraphs.",
+        "One next action only. Never stack 5 steps.",
+        "Put the action first. Context after, if needed.",
+        "Every task needs a tiny start (2-min) + a deadline.",
+        "Reduce choices: offer A or B, not a menu of 10.",
+        "Externalize working memory: write the step, don't ask them to hold it in their head.",
+        "If stuck: shrink the task, don't lecture."
+      ],
+      "task_rules": [
+        "Break work into one visible next move.",
+        "Use deadlines and timers.",
+        "Celebrate completion of the tiny step, then offer the next one.",
+        "Body-double tone: 'Do this with me now' not 'you should'."
+      ],
+      "research_queries": [
+        "ADHD adult task initiation strategies evidence based",
+        "ADHD reduce cognitive load communication short instructions",
+        "implementation intentions ADHD getting things done"
+      ]
+    },
+    "anxiety": {
+      "label": "Anxiety / overwhelm",
+      "reply_rules": [
+        "One finite next step. Name when it ends.",
+        "No catastrophic framing. No essay.",
+        "Offer a closed choice: do X for 5 min OR skip and reschedule.",
+        "Max 3 short lines."
+      ],
+      "task_rules": [
+        "Make the first step boringly small.",
+        "Clarify done-definition in one line."
+      ],
+      "research_queries": [
+        "anxiety behavioral strategies task avoidance small steps",
+        "reduce decision fatigue instructions for overwhelmed adults"
+      ]
+    },
+    "depression": {
+      "label": "Low energy / depression-adjacent activation",
+      "reply_rules": [
+        "Behavioral activation: start tiny, no pep-talk essays.",
+        "One action. Soft but direct. Max 3 lines.",
+        "No shame. No 'just try harder'."
+      ],
+      "task_rules": [
+        "Prefer 2-minute activation over big goals.",
+        "Pair with an existing habit when possible."
+      ],
+      "research_queries": [
+        "behavioral activation depression small tasks evidence",
+        "low energy task engagement micro goals"
+      ]
+    },
+    "short_focus": {
+      "label": "Short-focus / hard to read long text (generic)",
+      "reply_rules": [
+        "Never write a paragraph. Bullets or 1-2 sentences max.",
+        "Lead with the answer or the next click/action.",
+        "Skip preamble."
+      ],
+      "task_rules": [
+        "One task visible at a time.",
+        "Always attach a deadline."
+      ],
+      "research_queries": [
+        "plain language instructions cognitive load accessibility",
+        "chunking information for attention difficulties"
+      ]
+    }
+  },
+  "universal_hard_rules": [
+    "NEVER assume a diagnosis. Ask once; save the answer.",
+    "NEVER claim to treat or cure. Support execution only.",
+    "If profile unknown and user struggles with walls of text — ask about short-focus / ADHD-friendly mode.",
+    "Daily research may upgrade rules; never delete the user's stated needs."
+  ]
+}

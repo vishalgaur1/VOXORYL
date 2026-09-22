@@ -1,0 +1,10 @@
+{
+  "enabled": true,
+  "tasks": [
+    {
+      "id": "morning_scan",
+      "prompt": "Scan what the owner has been building from memory. Propose 3 fresh market-aware ideas and one concrete research task for today. Also suggest one marketing angle and one short video idea."
+    }
+  ],
+  "last_runs": []
+}

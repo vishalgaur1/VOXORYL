@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "default_bundle": {
+    "chat": "qwen3.5:4b",
+    "fast": "qwen2.5:0.5b",
+    "vision": "qwen2.5vl:3b",
+    "embed": "nomic-embed-text",
+    "note": "Pulled on every fresh clone so Voxoryl works immediately. Hardware advisor may suggest upgrade/downgrade after. Fast = greetings/chitchat; chat = main brain."
+  },
+  "pull_on_clone": [
+    "qwen3.5:4b",
+    "qwen2.5:0.5b",
+    "nomic-embed-text"
+  ],
+  "pull_on_clone_if_vram_gb_gte": {
+    "4": ["qwen2.5vl:3b"]
+  },
+  "tiers": [
+    {
+      "id": "lite",
+      "label": "Lite (weak GPU / low RAM)",
+      "min_vram_gb": 0,
+      "max_vram_gb": 3.9,
+      "min_ram_gb": 0,
+      "max_ram_gb": 11.9,
+      "chat": "qwen2.5:1.5b",
+      "vision": null,
+      "embed": "nomic-embed-text",
+      "reason": "Prefer a tiny chat model so the machine stays responsive. Skip vision if VRAM is tiny.",
+      "alts": ["gemma3:1b", "qwen2.5:0.5b"]
+    },
+    {
+      "id": "balanced",
+      "label": "Balanced (default clone target)",
+      "min_vram_gb": 4,
+      "max_vram_gb": 7.9,
+      "min_ram_gb": 12,
+      "max_ram_gb": 24,
+      "chat": "qwen3.5:4b",
+      "vision": "qwen2.5vl:3b",
+      "embed": "nomic-embed-text",
+      "reason": "Sweet spot for ~6GB laptop GPUs (e.g. GTX 1660 Ti) + 16GB RAM.",
+      "alts": ["phi4-mini", "gemma3:4b"]
+    },
+    {
+      "id": "strong",
+      "label": "Strong (8–12GB VRAM)",
+      "min_vram_gb": 8,
+      "max_vram_gb": 15.9,
+      "min_ram_gb": 16,
+      "max_ram_gb": 64,
+      "chat": "qwen3.5:9b",
+      "vision": "qwen2.5vl:7b",
+      "embed": "nomic-embed-text",
+      "reason": "Room for a sharper daily driver without thrashing.",
+      "alts": ["qwen2.5:14b", "phi4"]
+    },
+    {
+      "id": "beast",
+      "label": "Beast (16GB+ VRAM)",
+      "min_vram_gb": 16,
+      "max_vram_gb": 256,
+      "min_ram_gb": 32,
+      "max_ram_gb": 512,
+      "chat": "qwen2.5:32b",
+      "vision": "qwen2.5vl:7b",
+      "embed": "nomic-embed-text",
+      "reason": "High-end local box — bigger weights are usable if you keep context modest.",
+      "alts": ["qwen3.5:35b", "llama3.1:70b"]
+    }
+  ],
+  "cpu_only_fallback": {
+    "chat": "qwen2.5:1.5b",
+    "vision": null,
+    "embed": "nomic-embed-text",
+    "reason": "No usable GPU VRAM detected — stay tiny and CPU-friendly."
+  }
+}

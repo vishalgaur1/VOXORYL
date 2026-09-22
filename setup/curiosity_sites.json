@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "note": "Seed list of genuinely interesting / growth sites. Research may add more; spam domains stay blocked.",
+  "always_interesting": [
+    "https://www.britannica.com",
+    "https://plato.stanford.edu",
+    "https://www.nasa.gov",
+    "https://www.nature.com",
+    "https://www.scientificamerican.com",
+    "https://aeon.co",
+    "https://www.themarginalian.org",
+    "https://waitbutwhy.com",
+    "https://www.lesswrong.com",
+    "https://arxiv.org",
+    "https://www.metmuseum.org",
+    "https://www.smithsonianmag.com",
+    "https://www.khanacademy.org",
+    "https://css-tricks.com",
+    "https://developer.mozilla.org",
+    "https://www.coursera.org",
+    "https://ocw.mit.edu"
+  ],
+  "topics": {
+    "science": ["https://www.nature.com", "https://arxiv.org", "https://www.nasa.gov"],
+    "philosophy": ["https://plato.stanford.edu", "https://aeon.co"],
+    "arts": ["https://www.metmuseum.org", "https://www.themarginalian.org"],
+    "tech": ["https://developer.mozilla.org", "https://css-tricks.com", "https://arxiv.org"],
+    "history": ["https://www.britannica.com", "https://www.smithsonianmag.com"]
+  },
+  "blocked_patterns": [
+    "bit.ly",
+    "tinyurl",
+    "clickbait",
+    "free-crypto",
+    "warez",
+    "crack"
+  ]
+}

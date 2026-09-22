@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "local_only": true,
+  "never_upload": [
+    "data/",
+    "chat exports",
+    "knowledge.md",
+    "memory.json",
+    "qna answers",
+    "companion analyses",
+    "identity",
+    "leads contact lists",
+    "food order history",
+    "bank statements",
+    "wellbeing check-ins",
+    "todos",
+    "neuro-adapt / accessibility profile"
+  ],
+  "cloud_allowed_only_when": "User explicitly enables a non-sensitive connector (e.g. Groq verifier for tool plans) — NEVER for chat exports, therapy, food/bank history, wellbeing, neuro profile, or personal QnA content.",
+  "note": "Voxoryl brain is local Ollama. Private files stay under data/ (gitignored)."
+}

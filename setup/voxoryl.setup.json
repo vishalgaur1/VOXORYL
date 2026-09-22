@@ -1,0 +1,175 @@
+{
+  "version": 1,
+  "name": "Voxoryl private data layout",
+  "description": "Clones read this file on first start. It creates empty private data files under data/ (gitignored). Personal knowledge never ships in the repo.",
+  "privacy": {
+    "private_dir": "data",
+    "gitignored": true,
+    "note": "Everything under data/ stays on the user's machine. Only this setup file + templates are public."
+  },
+  "directories": [
+    "data",
+    "data/marketing",
+    "data/video_jobs",
+    "data/screenshots",
+    "data/share_inbox",
+    "data/melodies",
+    "data/media_jobs",
+    "data/leads",
+    "data/sites",
+    "data/chat_exports",
+    "data/chat_exports/inbox",
+    "data/chat_exports/reports",
+    "data/docs_vault",
+    "data/docs_vault/inbox",
+    "data/food_orders",
+    "data/food_orders/inbox",
+    "data/bank_statements",
+    "data/bank_statements/inbox",
+    "data/android_lab",
+    "data/android_lab/apks",
+    "data/android_lab/reports",
+    "data/hv_sandbox",
+    "data/hv_sandbox/inbox",
+    "data/hv_sandbox/reports",
+    "data/camera",
+    "data/music_taste",
+    "data/music_taste/playlists",
+    "data/books",
+    "data/style_colors",
+    "data/curiosity",
+    "data/self_upgrade_prompts",
+    "data/plans",
+    "workspace_sandbox"
+  ],
+  "files": [
+    {
+      "path": "data/knowledge.md",
+      "template": "setup/templates/knowledge.md",
+      "purpose": "Topic-headed knowledge log. New ## headings for new subjects; dated facts underneath.",
+      "create_if_missing": true,
+      "never_overwrite": true
+    },
+    {
+      "path": "data/plans.json",
+      "template": null,
+      "purpose": "Universal planner (day/week/trip/study/event/project) with dated steps.",
+      "create_if_missing": false,
+      "never_overwrite": true
+    },
+    {
+      "path": "data/sale_watches.json",
+      "template": null,
+      "purpose": "Amazon/OLX/etc sale & price watches + alerts.",
+      "create_if_missing": false,
+      "never_overwrite": true
+    },
+    {
+      "path": "data/languages.json",
+      "template": null,
+      "purpose": "Installed language packs + active edge-tts voice locale.",
+      "create_if_missing": false,
+      "never_overwrite": true
+    },
+    {
+      "path": "data/net_profile.json",
+      "template": null,
+      "purpose": "Last VPN/proxy profile — reset when work is done.",
+      "create_if_missing": false,
+      "never_overwrite": true
+    },
+    {
+      "path": "data/self_upgrade.jsonl",
+      "template": null,
+      "purpose": "Self-upgrade backlog (bugs/features) one JSON object per line.",
+      "create_if_missing": false,
+      "never_overwrite": true
+    },
+    {
+      "path": "data/knowledge_graph.json",
+      "template": "setup/templates/knowledge_graph.json",
+      "purpose": "Mind-map nodes + edges (auto-linked topics).",
+      "create_if_missing": true,
+      "never_overwrite": true
+    },
+    {
+      "path": "data/mindmap.html",
+      "template": null,
+      "purpose": "Interactive mind map HTML (regenerated from the graph on demand).",
+      "create_if_missing": false,
+      "generate": "mindmap",
+      "never_overwrite": false
+    },
+    {
+      "path": "data/memory.json",
+      "template": "setup/templates/memory.json",
+      "purpose": "Profile, facts, and episode memory for the local owner.",
+      "create_if_missing": true,
+      "never_overwrite": true
+    },
+    {
+      "path": "data/skills.json",
+      "template": "setup/templates/skills.json",
+      "purpose": "Always-on and optional skills Voxoryl prefers to use.",
+      "create_if_missing": true,
+      "never_overwrite": true
+    },
+    {
+      "path": "data/daily.json",
+      "template": "setup/templates/daily.json",
+      "purpose": "Daily autonomy schedule + last run log.",
+      "create_if_missing": true,
+      "never_overwrite": true
+    },
+    {
+      "path": "data/notes_inbox.md",
+      "template": "setup/templates/notes_inbox.md",
+      "purpose": "Local notes capture before Obsidian/Notion connectors.",
+      "create_if_missing": true,
+      "never_overwrite": true
+    },
+    {
+      "path": "data/market_briefs.md",
+      "template": "setup/templates/market_briefs.md",
+      "purpose": "Append-only market research briefs.",
+      "create_if_missing": true,
+      "never_overwrite": true
+    },
+    {
+      "path": "data/reel_vault.md",
+      "template": "setup/templates/reel_vault.md",
+      "purpose": "Structured archive of tips rescued from reels / WhatsApp shares.",
+      "create_if_missing": true,
+      "never_overwrite": true
+    },
+    {
+      "path": "data/council_log.jsonl",
+      "template": "setup/templates/council_log.jsonl",
+      "purpose": "Council deliberation history (one JSON object per line).",
+      "create_if_missing": true,
+      "never_overwrite": true
+    },
+    {
+      "path": ".env",
+      "template": ".env.example",
+      "purpose": "Local secrets and connectors. Never commit.",
+      "create_if_missing": true,
+      "never_overwrite": true
+    }
+  ],
+  "runtime": {
+    "on_startup": "read setup/voxoryl.setup.json and ensure all private files exist",
+    "knowledge_rules": [
+      "Store lasting facts in data/knowledge.md under ## Topic headings",
+      "Create a new heading when the subject is new",
+      "Append dated bullets: - **YYYY-MM-DD** — fact",
+      "Use the profile owner name in facts",
+      "Auto-link related topics into data/knowledge_graph.json",
+      "Render interactive map to data/mindmap.html and serve at /mindmap",
+      "Never commit data/ to git"
+    ],
+    "powerups_guide": "setup/powerups.md",
+    "models_catalog": "setup/models.json",
+    "models_flow": "On clone: pull default_bundle via voxoryl.models_setup; then recommend upgrade/downgrade from hardware probe"
+  }
+}

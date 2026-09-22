@@ -1,0 +1,37 @@
+{
+  "servers": [
+    {
+      "name": "filesystem",
+      "enabled": false,
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "D:/VOXORYL/workspace_sandbox"],
+      "tools": ["read_file", "write_file", "list_directory"],
+      "note": "Official MCP filesystem server — enable when Node/npx available"
+    },
+    {
+      "name": "git",
+      "enabled": false,
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-git", "--repository", "D:/VOXORYL"],
+      "tools": ["git_status", "git_log", "git_diff"]
+    },
+    {
+      "name": "browser",
+      "enabled": false,
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-puppeteer"],
+      "tools": ["puppeteer_navigate", "puppeteer_screenshot", "puppeteer_click", "puppeteer_fill"]
+    },
+    {
+      "name": "custom-http",
+      "enabled": false,
+      "transport": "http",
+      "url": "http://127.0.0.1:3920",
+      "tools": ["example_tool"],
+      "note": "Point at any local MCP/HTTP tool bridge you run"
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Secrets & credentials — NEVER commit
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+**/secrets.json
+**/service-account*.json
+**/client_secret*.json
+
+# Local runtime data (PII, memory, DBs, logs)
+data/*
+!data/.gitkeep
+!data/README.md
+
+# Workspace sandbox (user files)
+workspace_sandbox/
+workspace_sandbox/**
+
+# Logs & caches
+*.log
+logs/
+.cache/
+*.gguf
+agent-tools/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.lnk
+.idea/
+.vscode/
+*.swp
+*~
+
+# Browser / Chrome debug state
+**/Chrome Debug*/
+**/chrome_debug*/
+**/User Data/
+**/Local State
+
+# Windows personal shortcuts / installer leftovers
+*.vbs.bak
+
+# Packaging output
+release/
+*.zip
+!docs/**/*.zip
+
+# Local notes accidentally dropped in package root
+voxoryl/*.local.md

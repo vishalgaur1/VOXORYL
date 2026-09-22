@@ -1,0 +1,82 @@
+{
+  "servers": [
+    {
+      "name": "filesystem",
+      "enabled": false,
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "D:/VOXORYL/workspace_sandbox"],
+      "tools": ["read_file", "write_file", "list_directory"],
+      "note": "Official MCP filesystem server — enable when Node/npx available"
+    },
+    {
+      "name": "git",
+      "enabled": false,
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-git", "--repository", "D:/VOXORYL"],
+      "tools": ["git_status", "git_log", "git_diff"]
+    },
+    {
+      "name": "browser",
+      "enabled": false,
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-puppeteer"],
+      "tools": ["puppeteer_navigate", "puppeteer_screenshot", "puppeteer_click", "puppeteer_fill"]
+    },
+    {
+      "name": "fetch",
+      "enabled": false,
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-fetch"],
+      "tools": ["fetch"],
+      "note": "Pull URL text for reel/docs ingest"
+    },
+    {
+      "name": "sqlite",
+      "enabled": false,
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sqlite", "--db-path", "D:/VOXORYL/data/voxoryl.db"],
+      "tools": ["query", "execute"],
+      "note": "Structured queries over local DB"
+    },
+    {
+      "name": "memory",
+      "enabled": false,
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "tools": ["create_entities", "search_nodes"],
+      "note": "Graph memory MCP — complements knowledge.md"
+    },
+    {
+      "name": "time",
+      "enabled": false,
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-time"],
+      "tools": ["get_current_time"],
+      "note": "Deadlines / bike service reminders"
+    },
+    {
+      "name": "media",
+      "enabled": false,
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-everything"],
+      "tools": ["example"],
+      "note": "Optional: point at a media MCP. Voxoryl already has Pollinations + ComfyUI in voxoryl/media_gen.py"
+    },
+    {
+      "name": "custom-http",
+      "enabled": false,
+      "transport": "http",
+      "url": "http://127.0.0.1:3920",
+      "tools": ["example_tool"],
+      "note": "Point at any local MCP/HTTP tool bridge you run"
+    }
+  ]
+}

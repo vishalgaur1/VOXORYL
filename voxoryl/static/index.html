@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VOXORYL</title>
+  <link rel="icon" href="/assets/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png" />
+  <link rel="icon" type="image/svg+xml" href="/assets/voxoryl-icon.svg" />
+  <link rel="apple-touch-icon" href="/assets/voxoryl-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&family=Sora:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/styles.css" />
+</head>
+<body>
+  <div class="atmosphere" aria-hidden="true">
+    <div class="atmosphere__wash"></div>
+    <div class="atmosphere__grid"></div>
+    <div class="atmosphere__arc"></div>
+  </div>
+
+  <div class="shell">
+    <section class="hero">
+      <div class="hero__main">
+        <div class="hero__copy">
+          <p class="kicker">Always-on local command</p>
+          <h1 class="brand">VOXORYL</h1>
+          <p class="tagline">Talk directly. Escalate to Council when the job is hard.</p>
+          <div class="hero__links">
+            <a class="text-link" href="/widget" id="widgetLink">Open voice orb</a>
+            <span class="link-sep" aria-hidden="true"></span>
+            <a class="text-link" href="/mindmap">Mind map</a>
+          </div>
+          <p class="action-hint hero__link-hint">Opens the floating voice orb</p>
+        </div>
+
+        <div class="hero__visual" aria-hidden="true">
+          <div class="signal-ring">
+            <span class="signal-ring__core"></span>
+          </div>
+        </div>
+      </div>
+
+      <p class="status-line" id="status">
+        <span class="status-mark" aria-hidden="true"></span>
+        <span id="statusText">Checking link…</span>
+      </p>
+
+      <div class="command" aria-label="Ask Voxoryl">
+        <div class="mode-switch" data-active="tools" role="radiogroup" aria-label="How should Voxoryl reply?">
+          <button type="button" class="mode-btn" role="radio" aria-checked="false" data-mode="direct">Direct</button>
+          <button type="button" class="mode-btn is-active" role="radio" aria-checked="true" data-mode="tools">Tools</button>
+          <button type="button" class="mode-btn" role="radio" aria-checked="false" data-mode="council">Council</button>
+          <span class="mode-switch__thumb" aria-hidden="true"></span>
+        </div>
+        <p class="mode-hint" id="modeHint">Tools — Voxoryl can control your PC and apps when needed.</p>
+
+        <label class="sr-only" for="prompt">Message for Voxoryl</label>
+        <textarea id="prompt" rows="3" placeholder="Say hello, plan my day, watch this on amazon…"></textarea>
+
+        <div class="command__actions">
+          <div class="command__primary">
+            <button id="askBtn" type="button">Ask Voxoryl</button>
+            <p class="action-hint" id="askHint">Sends your message to Voxoryl</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace" aria-label="Session and knowledge">
+      <div class="panel panel--session is-collapsed" id="sessionPanel" data-panel="session">
+        <button type="button" class="panel__toggle" id="sessionToggle" aria-expanded="false" aria-controls="sessionBody">
+          <span class="panel__title-wrap">
+            <span class="panel__title">Session</span>
+            <span class="panel__badge" id="sessionBadge" hidden>New</span>
+          </span>
+          <span class="panel__summary" id="sessionSummary">Nothing here yet — replies will show up here</span>
+          <span class="panel__chevron" aria-hidden="true"></span>
+        </button>
+        <div class="panel__body" id="sessionBody" role="region" aria-labelledby="sessionToggle" hidden>
+          <p class="empty" id="councilEmpty">Nothing here yet. Ask Voxoryl something above.</p>
+          <div class="panel__scroll" id="sessionScroll">
+            <div id="voices"></div>
+            <div id="online"></div>
+            <div id="synthesis"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="workspace__side">
+        <div class="panel panel--memory is-collapsed" id="memoryPanel" data-panel="memory">
+          <button type="button" class="panel__toggle" id="memoryToggle" aria-expanded="false" aria-controls="memoryBody">
+            <span class="panel__title-wrap">
+              <span class="panel__title">Memory</span>
+            </span>
+            <span class="panel__summary">What Voxoryl remembers about you</span>
+            <span class="panel__chevron" aria-hidden="true"></span>
+          </button>
+          <div class="panel__body" id="memoryBody" role="region" aria-labelledby="memoryToggle" hidden>
+            <div class="panel__scroll panel__scroll--memory">
+              <pre id="memoryBox" class="telemetry">Nothing here yet</pre>
+            </div>
+            <form class="teach" id="teachForm" autocomplete="off">
+              <label class="sr-only" for="memText">Teach Voxoryl</label>
+              <input id="memText" placeholder="Teach Voxoryl something about you…" />
+              <div class="teach__row">
+                <label class="sr-only" for="memKind">Memory kind</label>
+                <select id="memKind">
+                  <option value="fact">Fact</option>
+                  <option value="project">Project</option>
+                  <option value="goal">Goal</option>
+                  <option value="preference">Preference</option>
+                </select>
+                <button id="memBtn" type="submit">Remember</button>
+              </div>
+              <p class="action-hint">Saves this so Voxoryl can use it later</p>
+            </form>
+          </div>
+        </div>
+
+        <div class="panel panel--skills is-collapsed" id="skillsPanel" data-panel="skills">
+          <button type="button" class="panel__toggle" id="skillsToggle" aria-expanded="false" aria-controls="skillsBody">
+            <span class="panel__title-wrap">
+              <span class="panel__title">Skills</span>
+            </span>
+            <span class="panel__summary">What Voxoryl can do</span>
+            <span class="panel__chevron" aria-hidden="true"></span>
+          </button>
+          <div class="panel__body" id="skillsBody" role="region" aria-labelledby="skillsToggle" hidden>
+            <div class="panel__scroll panel__scroll--skills">
+              <ul id="skillsList"></ul>
+              <p class="empty" id="skillsEmpty" hidden>Nothing here yet</p>
+            </div>
+            <details class="more-actions" id="skillsMore">
+              <summary>More</summary>
+              <div class="more-actions__body">
+                <button id="dailyBtn" type="button" class="ghost">Run daily check</button>
+                <p class="action-hint">Runs Voxoryl’s daily autonomy once — may take a minute</p>
+              </div>
+            </details>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="/assets/app.js"></script>
+</body>
+</html>

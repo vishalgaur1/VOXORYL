@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "default_image_backend": "auto",
+  "default_video_backend": "auto",
+  "max_auto_rounds": 3,
+  "backends": {
+    "pollinations": {
+      "enabled": true,
+      "type": "online_free",
+      "image_url": "https://image.pollinations.ai/prompt/{prompt}",
+      "note": "Free, no API key. Fast. Good default when ComfyUI is down."
+    },
+    "comfyui": {
+      "enabled": true,
+      "type": "local",
+      "url_env": "COMFYUI_URL",
+      "note": "Best quality on your GPU when ComfyUI is running with a txt2img workflow."
+    },
+    "mcp_media": {
+      "enabled": false,
+      "type": "mcp",
+      "server": "media",
+      "note": "Optional MCP image/video server when you enable it in mcp.servers.json"
+    }
+  },
+  "comfy_txt2img_workflow": "setup/comfy_txt2img_api.json"
+}

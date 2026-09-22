@@ -1,0 +1,21 @@
+{
+  "profile": {
+    "owner": "Owner",
+    "goals": [],
+    "preferences": [],
+    "projects": [],
+    "identity": {
+      "full_name": "",
+      "email": "",
+      "phone": "",
+      "address": "",
+      "city": "",
+      "state": "",
+      "postal": "",
+      "country": ""
+    }
+  },
+  "facts": [],
+  "episodes": [],
+  "updated_at": null
+}
