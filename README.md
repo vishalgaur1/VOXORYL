@@ -58,7 +58,7 @@ VOXORYL is a **desktop companion**, not a chat site with optional plugins. Talk 
 
 - Native **voice orb** (pywebview / WebView2 on Windows; browser `--app` fallback) at `/widget`.
 - Command center dashboard at `/`, mind map at `/mindmap` — Local/Cloud toggle, mic/speaker pickers, Talk vs Council.
-- **Reels** quick action + Settings panel: paste an Instagram Reel URL or drop a short video into Voxy’s private inbox (`data/reels/`).
+- **Reels** quick action + Settings panel: paste one Instagram Reel URL, a multi-line collection, ZIP/folder of videos, or optional Graph account media. Each item is understood, then **gated** (promote / quarantine / reject) before the knowledge vault. Library shows per-item status under `data/reels/`.
 
 ### Instagram (VOXORYL’s own account)
 
@@ -73,6 +73,15 @@ To **post as VOXORYL**, create a Professional (Business/Creator) Instagram accou
 5. Call `publish_reel(video_url, caption)` via `voxoryl.instagram` or `POST /api/reels/publish` — Graph needs a **public HTTPS video URL** in this P0 scaffold (local-file resumable upload is not wired yet).
 
 **ToS:** public oEmbed or files you upload only — no credential stuffing, no private-session scraping.
+
+### Reels collections — how to start
+
+1. Open the voice widget → **Settings → Reels** (or tap the **Reels** quick action).
+2. Paste **one URL**, or a **multi-line list** under Import collection, or upload a **ZIP** of videos (optional `manifest.json` inside). Local export folders work via `folder_path` / voice + path.
+3. Voxy **understands** each reel (oEmbed caption, optional ASR transcript, summary), then runs a **gate**: usefulness + credibility → `promote` | `quarantine` | `reject`.
+4. Only **promoted** items enter the tips / knowledge vault; quarantined stay in `data/reels/` for review.
+5. Say **“import my saved reels”**, **“what did you learn from that collection?”**, or **“show quarantined reels”**.
+6. Honest path: Meta Graph does **not** expose personal Instagram Saved — with tokens it can list *your* Business account media; otherwise paste / export.
 
 ### Windows vs macOS (honest matrix)
 

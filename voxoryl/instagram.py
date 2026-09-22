@@ -31,6 +31,13 @@ def is_configured() -> bool:
     )
 
 
+SAVED_NOTE = (
+    "Meta Graph does not expose a personal Instagram “Saved” collection. "
+    "With tokens set, VOXORYL can list recent media from *your* Business/Creator account only. "
+    "For Saved Reels from others: paste URLs, ZIP/folder export, or a JSON manifest."
+)
+
+
 def status() -> dict[str, Any]:
     configured = is_configured()
     return {
@@ -49,10 +56,102 @@ def status() -> dict[str, Any]:
                 "(see README Instagram section)."
             )
         ),
+        "saved_note": SAVED_NOTE,
         "tos": (
             "Publishing uses Meta Graph API with tokens you own. "
             "VOXORYL never asks for Instagram passwords or scrapes private sessions."
         ),
+    }
+
+
+async def list_recent_media(*, limit: int = 25) -> dict[str, Any]:
+    """
+    List recent media from the configured IG Business/Creator account.
+
+    This is NOT personal “Saved” posts — Graph does not expose that collection.
+    """
+    st = status()
+    if not st["configured"]:
+        return {
+            "ok": False,
+            "error": "instagram not configured",
+            "hint": st["hint"],
+            "saved_note": SAVED_NOTE,
+            "speak": "Instagram tokens aren’t set — paste a URL collection or export folder instead.",
+            "tos": st["tos"],
+            "items": [],
+        }
+
+    ig_user = settings.instagram_business_account_id.strip()
+    token = settings.instagram_access_token.strip()
+    base = _graph_base()
+    capped = max(1, min(int(limit or 25), 50))
+    fields = "id,caption,media_type,media_url,permalink,timestamp,thumbnail_url"
+
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        try:
+            r = await client.get(
+                f"{base}/{ig_user}/media",
+                params={"fields": fields, "limit": capped, "access_token": token},
+            )
+        except Exception as exc:
+            return {
+                "ok": False,
+                "error": f"graph media failed: {exc}",
+                "saved_note": SAVED_NOTE,
+                "speak": "Couldn’t reach Meta Graph for account media.",
+                "tos": st["tos"],
+                "items": [],
+            }
+
+        if r.status_code >= 400:
+            return {
+                "ok": False,
+                "error": f"media list HTTP {r.status_code}",
+                "detail": r.text[:600],
+                "hint": "Check token scopes (instagram_basic / pages_read_engagement) and business account id.",
+                "saved_note": SAVED_NOTE,
+                "speak": "Graph rejected the media list — check token permissions.",
+                "tos": st["tos"],
+                "items": [],
+            }
+
+        try:
+            payload = r.json()
+        except Exception:
+            payload = {}
+
+    raw = payload.get("data") if isinstance(payload, dict) else []
+    items: list[dict[str, Any]] = []
+    if isinstance(raw, list):
+        for row in raw:
+            if not isinstance(row, dict):
+                continue
+            items.append(
+                {
+                    "id": row.get("id"),
+                    "caption": row.get("caption") or "",
+                    "media_type": row.get("media_type"),
+                    "media_url": row.get("media_url"),
+                    "permalink": row.get("permalink") or row.get("media_url"),
+                    "url": row.get("permalink") or row.get("media_url"),
+                    "timestamp": row.get("timestamp"),
+                    "thumbnail_url": row.get("thumbnail_url"),
+                }
+            )
+
+    return {
+        "ok": True,
+        "items": items,
+        "count": len(items),
+        "saved_note": SAVED_NOTE,
+        "speak": (
+            f"Found {len(items)} recent post(s) on the VOXORYL Instagram account "
+            "(not personal Saved)."
+            if items
+            else "No recent account media returned from Graph."
+        ),
+        "tos": st["tos"],
     }
 
 

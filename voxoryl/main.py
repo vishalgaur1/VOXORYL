@@ -591,16 +591,124 @@ class ReelsBody(BaseModel):
     video_path: str = ""
     distill: bool = True
     transcribe: bool = True
+    collection_id: str = ""
+    folder_path: str = ""
+    urls_text: str = ""
+    use_graph: bool = False
+    name: str = ""
+    manifest: dict | list | None = None
+    manifest_text: str = ""
+
+
+class ReelsCollectionBody(BaseModel):
+    name: str = ""
+    urls_text: str = ""
+    folder_path: str = ""
+    use_graph: bool = False
+    distill: bool = True
+    transcribe: bool = True
+    manifest: dict | list | None = None
+    manifest_text: str = ""
 
 
 @app.get("/api/reels")
-async def reels_list(limit: int = 50) -> dict[str, Any]:
+async def reels_list(
+    limit: int = 50,
+    status: str = "",
+    collection_id: str = "",
+) -> dict[str, Any]:
     from voxoryl.instagram import status as ig_status
     from voxoryl.reels import list_reels
 
-    out = list_reels(limit=limit)
+    out = list_reels(limit=limit, status=status, collection_id=collection_id)
     out["instagram"] = ig_status()
     return out
+
+
+@app.get("/api/reels/collections")
+async def reels_collections(limit: int = 30) -> dict[str, Any]:
+    from voxoryl.reels import list_collections
+
+    return list_collections(limit=limit)
+
+
+@app.get("/api/reels/collections/{collection_id}")
+async def reels_collection_get(collection_id: str) -> dict[str, Any]:
+    from voxoryl.reels import get_collection
+
+    return get_collection(collection_id)
+
+
+@app.get("/api/reels/quarantined")
+async def reels_quarantined(limit: int = 50) -> dict[str, Any]:
+    from voxoryl.reels import list_quarantined
+
+    return list_quarantined(limit=limit)
+
+
+@app.get("/api/reels/learned")
+async def reels_learned(collection_id: str = "") -> dict[str, Any]:
+    from voxoryl.reels import collection_learned
+
+    return collection_learned(collection_id=collection_id)
+
+
+@app.post("/api/reels/collections")
+async def reels_collections_import(request: Request) -> dict[str, Any]:
+    """
+    Import a batch of saved Reels.
+    - JSON: {urls_text, folder_path, manifest, use_graph, name, …}
+    - Multipart: file=ZIP (+ optional urls_text / name form fields)
+    """
+    from voxoryl.reels import import_collection
+
+    content_type = (request.headers.get("content-type") or "").lower()
+    if "multipart/form-data" in content_type:
+        form = await request.form()
+        upload = form.get("file")
+        name = str(form.get("name") or "").strip()
+        urls_text = str(form.get("urls_text") or form.get("urls") or "").strip()
+        folder_path = str(form.get("folder_path") or "").strip()
+        manifest_text = str(form.get("manifest_text") or form.get("manifest") or "").strip()
+        use_graph = str(form.get("use_graph") or "").lower() in {"1", "true", "yes"}
+        distill_raw = str(form.get("distill") if form.get("distill") is not None else "true").lower()
+        transcribe_raw = str(form.get("transcribe") if form.get("transcribe") is not None else "true").lower()
+        distill = distill_raw not in {"0", "false", "no"}
+        transcribe = transcribe_raw not in {"0", "false", "no"}
+        zip_bytes = None
+        zip_filename = "collection.zip"
+        if upload is not None and hasattr(upload, "read"):
+            zip_bytes = await upload.read()
+            zip_filename = getattr(upload, "filename", None) or "collection.zip"
+        return await import_collection(
+            name=name,
+            urls_text=urls_text,
+            folder_path=folder_path,
+            zip_bytes=zip_bytes,
+            zip_filename=str(zip_filename),
+            manifest_text=manifest_text,
+            use_graph=use_graph,
+            distill=distill,
+            transcribe=transcribe,
+        )
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+    if not isinstance(payload, dict):
+        payload = {}
+    body = ReelsCollectionBody.model_validate(payload)
+    return await import_collection(
+        name=body.name,
+        urls_text=body.urls_text,
+        folder_path=body.folder_path,
+        manifest=body.manifest,
+        manifest_text=body.manifest_text,
+        use_graph=body.use_graph,
+        distill=body.distill,
+        transcribe=body.transcribe,
+    )
 
 
 @app.get("/api/reels/{reel_id}")
@@ -629,7 +737,23 @@ async def reels_create(request: Request) -> dict[str, Any]:
             payload = {}
         body = ReelsBody.model_validate(payload)
         action = (body.action or "ingest").strip().lower()
-        if action in {"list", "status", "about", "recall", "publish", "post"}:
+        if action in {
+            "list",
+            "status",
+            "about",
+            "recall",
+            "publish",
+            "post",
+            "import",
+            "collection",
+            "import_collection",
+            "batch",
+            "learned",
+            "what_learned",
+            "quarantine",
+            "quarantined",
+            "collections",
+        }:
             return await tool_reels(
                 action=action,
                 url=body.url,
@@ -637,6 +761,26 @@ async def reels_create(request: Request) -> dict[str, Any]:
                 reel_id=body.reel_id,
                 video_path=body.video_path,
                 caption=body.caption,
+                collection_id=body.collection_id,
+                folder_path=body.folder_path,
+                urls_text=body.urls_text,
+                use_graph=body.use_graph,
+                name=body.name,
+            )
+        # Multi-line paste on url/message → collection import
+        blob = (body.urls_text or body.url or body.message or "").strip()
+        if blob.count("http") > 1 or (body.urls_text and body.urls_text.strip()):
+            from voxoryl.reels import import_collection
+
+            return await import_collection(
+                name=body.name,
+                urls_text=body.urls_text or blob,
+                folder_path=body.folder_path,
+                manifest=body.manifest,
+                manifest_text=body.manifest_text,
+                use_graph=body.use_graph,
+                distill=body.distill,
+                transcribe=body.transcribe,
             )
         target = (body.url or body.message or "").strip()
         if not target:
@@ -655,6 +799,18 @@ async def reels_create(request: Request) -> dict[str, Any]:
     if upload is not None and hasattr(upload, "read"):
         data = await upload.read()
         filename = getattr(upload, "filename", None) or "reel.mp4"
+        # ZIP → collection import
+        if str(filename).lower().endswith(".zip"):
+            from voxoryl.reels import import_collection
+
+            return await import_collection(
+                name=str(form.get("name") or "").strip(),
+                urls_text=str(form.get("urls_text") or "").strip(),
+                zip_bytes=data,
+                zip_filename=str(filename),
+                distill=distill,
+                transcribe=transcribe,
+            )
         return await ingest_file(
             data,
             str(filename),

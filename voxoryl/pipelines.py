@@ -233,9 +233,73 @@ async def pipeline_save_reel(message: str) -> dict[str, Any]:
             "result": result,
         }
 
-    from voxoryl.reels import extract_reel_urls, ingest_url, tool_reels
+    if any(
+        k in lower
+        for k in (
+            "quarantined reel",
+            "show quarantine",
+            "show quarantined",
+            "quarantined reels",
+        )
+    ):
+        from voxoryl.reels import list_quarantined
 
-    urls = extract_reel_urls(message)
+        result = list_quarantined(limit=30)
+        return {
+            "ok": bool(result.get("ok")),
+            "pipeline": "save_reel",
+            "speak": str(result.get("speak") or "Quarantine list ready."),
+            "result": result,
+        }
+
+    if any(
+        k in lower
+        for k in (
+            "what did you learn",
+            "learned from that collection",
+            "learn from that collection",
+            "from that collection",
+        )
+    ):
+        from voxoryl.reels import collection_learned
+
+        result = collection_learned()
+        return {
+            "ok": bool(result.get("ok")),
+            "pipeline": "save_reel",
+            "speak": str(result.get("speak") or result.get("error") or "No collection summary."),
+            "result": result,
+        }
+
+    from voxoryl.reels import extract_reel_urls, extract_urls_multiline, ingest_url, import_collection, tool_reels
+
+    if any(
+        k in lower
+        for k in (
+            "import my saved",
+            "import saved reels",
+            "import my reels",
+            "import collection",
+            "batch of reels",
+        )
+    ):
+        result = await tool_reels(action="import", message=message, use_graph=True)
+        return {
+            "ok": bool(result.get("ok")),
+            "pipeline": "save_reel",
+            "speak": str(result.get("speak") or result.get("error") or result.get("hint") or "Collection import done."),
+            "result": result,
+        }
+
+    urls = extract_urls_multiline(message) or extract_reel_urls(message)
+    if len(urls) > 1:
+        result = await import_collection(name="Voice URLs", urls_text="\n".join(urls), distill=True)
+        return {
+            "ok": bool(result.get("ok")),
+            "pipeline": "save_reel",
+            "speak": str(result.get("speak") or result.get("error") or "Collection imported."),
+            "result": result,
+        }
     if urls:
         result = await ingest_url(urls[0])
         return {
@@ -1511,6 +1575,15 @@ def match_pipeline(message: str) -> str | None:
             "productivity reel",
             "share inbox",
             "reels inbox",
+            "import my saved",
+            "import saved reels",
+            "import my reels",
+            "import collection",
+            "quarantined reel",
+            "show quarantine",
+            "show quarantined",
+            "what did you learn",
+            "learned from that collection",
         )
     ):
         return "save_reel"

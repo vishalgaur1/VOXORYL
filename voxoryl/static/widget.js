@@ -1513,6 +1513,11 @@ const reelsDrop = document.getElementById("reelsDrop");
 const reelsList = document.getElementById("reelsList");
 const reelsStatus = document.getElementById("reelsStatus");
 const reelsBlock = document.getElementById("reelsBlock");
+const reelsCollectionUrls = document.getElementById("reelsCollectionUrls");
+const reelsCollectionName = document.getElementById("reelsCollectionName");
+const reelsImportCollection = document.getElementById("reelsImportCollection");
+const reelsZipFile = document.getElementById("reelsZipFile");
+const reelsGraphImport = document.getElementById("reelsGraphImport");
 
 function setReelsStatus(msg, { error = false } = {}) {
   if (!reelsStatus) return;
@@ -1526,24 +1531,54 @@ function setReelsStatus(msg, { error = false } = {}) {
   reelsStatus.style.color = error ? "#b42318" : "";
 }
 
+function reelStatusBadge(item) {
+  const st = String(item.status || item.kb_status || "ready").toLowerCase();
+  const label =
+    st === "promoted"
+      ? "promoted"
+      : st === "quarantined" || st === "quarantine"
+        ? "quarantined"
+        : st === "rejected"
+          ? "rejected"
+          : st;
+  const cls =
+    label === "promoted"
+      ? "reels-badge reels-badge--promoted"
+      : label === "quarantined"
+        ? "reels-badge reels-badge--quarantined"
+        : label === "rejected"
+          ? "reels-badge reels-badge--rejected"
+          : "reels-badge reels-badge--ready";
+  return `<span class="${cls}">${label}</span>`;
+}
+
 async function refreshReelsList() {
   if (!reelsList) return;
   try {
-    const res = await fetch(apiUrl("/api/reels?limit=8"));
+    const res = await fetch(apiUrl("/api/reels?limit=12"));
     const data = await res.json();
     const items = data.items || [];
     reelsList.innerHTML = "";
     if (!items.length) {
-      reelsList.innerHTML = "<li><span>No reels yet — paste a link or drop a video.</span></li>";
+      reelsList.innerHTML =
+        "<li><span>No reels yet — paste a link, import a collection, or drop a video.</span></li>";
       return;
     }
     for (const item of items) {
       const li = document.createElement("li");
       const title = item.title || "Reel";
-      const summary = item.summary || item.caption || item.transcript || "Saved";
+      const gateBit =
+        item.gate && item.gate.rationale
+          ? ` · ${String(item.gate.rationale).slice(0, 80)}`
+          : "";
+      const summary =
+        item.summary || item.caption || item.transcript || "Saved";
       li.innerHTML = `<strong></strong><span></span>`;
-      li.querySelector("strong").textContent = title;
-      li.querySelector("span").textContent = String(summary).slice(0, 160);
+      const strong = li.querySelector("strong");
+      strong.textContent = title + " ";
+      strong.insertAdjacentHTML("beforeend", reelStatusBadge(item));
+      li.querySelector("span").textContent =
+        String(summary).slice(0, 140) + gateBit;
       reelsList.appendChild(li);
     }
   } catch (err) {
@@ -1552,8 +1587,8 @@ async function refreshReelsList() {
 }
 
 async function submitReelUrl() {
-  const url = (reelsUrl && reelsUrl.value || "").trim();
-  const caption = (reelsCaption && reelsCaption.value || "").trim();
+  const url = ((reelsUrl && reelsUrl.value) || "").trim();
+  const caption = ((reelsCaption && reelsCaption.value) || "").trim();
   if (!url) {
     setReelsStatus("Paste an Instagram Reel URL first", { error: true });
     return;
@@ -1583,15 +1618,17 @@ async function uploadReelFile(file) {
   setReelsStatus(`Uploading ${file.name}…`);
   const fd = new FormData();
   fd.append("file", file, file.name);
-  const caption = (reelsCaption && reelsCaption.value || "").trim();
-  const url = (reelsUrl && reelsUrl.value || "").trim();
+  const caption = ((reelsCaption && reelsCaption.value) || "").trim();
+  const url = ((reelsUrl && reelsUrl.value) || "").trim();
   if (caption) fd.append("caption", caption);
   if (url) fd.append("url", url);
   try {
     const res = await fetch(apiUrl("/api/reels"), { method: "POST", body: fd });
     const data = await res.json();
     if (!data.ok) {
-      setReelsStatus(data.hint || data.error || "Upload failed", { error: true });
+      setReelsStatus(data.hint || data.error || "Upload failed", {
+        error: true,
+      });
       return;
     }
     if (reelsFile) reelsFile.value = "";
@@ -1599,6 +1636,60 @@ async function uploadReelFile(file) {
     await refreshReelsList();
   } catch (err) {
     setReelsStatus("Network error uploading reel", { error: true });
+  }
+}
+
+async function importReelsCollection({ useGraph = false, zipFile = null } = {}) {
+  const urlsText = ((reelsCollectionUrls && reelsCollectionUrls.value) || "").trim();
+  const name = ((reelsCollectionName && reelsCollectionName.value) || "").trim();
+  if (!useGraph && !zipFile && !urlsText) {
+    setReelsStatus("Paste a URL list or choose a ZIP first", { error: true });
+    return;
+  }
+  setReelsStatus(
+    useGraph
+      ? "Importing Graph account media…"
+      : zipFile
+        ? `Importing ZIP ${zipFile.name}…`
+        : "Importing collection…"
+  );
+  try {
+    let res;
+    if (zipFile) {
+      const fd = new FormData();
+      fd.append("file", zipFile, zipFile.name);
+      if (name) fd.append("name", name);
+      if (urlsText) fd.append("urls_text", urlsText);
+      if (useGraph) fd.append("use_graph", "true");
+      res = await fetch(apiUrl("/api/reels/collections"), {
+        method: "POST",
+        body: fd,
+      });
+    } else {
+      res = await fetch(apiUrl("/api/reels/collections"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          urls_text: urlsText,
+          use_graph: !!useGraph,
+        }),
+      });
+    }
+    const data = await res.json();
+    if (!data.ok) {
+      setReelsStatus(
+        data.hint || data.error || data.speak || "Import failed",
+        { error: true }
+      );
+      return;
+    }
+    if (reelsCollectionUrls) reelsCollectionUrls.value = "";
+    if (reelsZipFile) reelsZipFile.value = "";
+    setReelsStatus(data.speak || "Collection imported.");
+    await refreshReelsList();
+  } catch (err) {
+    setReelsStatus("Network error importing collection", { error: true });
   }
 }
 
@@ -1632,6 +1723,22 @@ if (reelsFile) {
     if (f) uploadReelFile(f);
   });
 }
+if (reelsImportCollection) {
+  reelsImportCollection.addEventListener("click", () =>
+    importReelsCollection()
+  );
+}
+if (reelsZipFile) {
+  reelsZipFile.addEventListener("change", () => {
+    const f = reelsZipFile.files && reelsZipFile.files[0];
+    if (f) importReelsCollection({ zipFile: f });
+  });
+}
+if (reelsGraphImport) {
+  reelsGraphImport.addEventListener("click", () =>
+    importReelsCollection({ useGraph: true })
+  );
+}
 if (reelsDrop) {
   ["dragenter", "dragover"].forEach((evt) => {
     reelsDrop.addEventListener(evt, (e) => {
@@ -1649,7 +1756,12 @@ if (reelsDrop) {
   });
   reelsDrop.addEventListener("drop", (e) => {
     const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
-    if (f) uploadReelFile(f);
+    if (!f) return;
+    if ((f.name || "").toLowerCase().endsWith(".zip")) {
+      importReelsCollection({ zipFile: f });
+    } else {
+      uploadReelFile(f);
+    }
   });
   reelsDrop.addEventListener("click", () => {
     if (reelsFile) reelsFile.click();

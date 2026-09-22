@@ -279,8 +279,9 @@
         <div class="device-block" id="reelsBlock">
           <p class="device-block__title">Reels</p>
           <p class="device-hint" id="reelsHint">
-            Share an Instagram Reel with Voxy — paste a public link or drop a short video.
-            Stored privately under data/reels/. No Instagram login scraping.
+            Share Reels with Voxy — one link, a multi-line collection, or a ZIP/folder of videos.
+            Each item is understood, then gated (promote / quarantine / reject) before knowledge.
+            Stored under data/reels/. No Instagram login scraping.
           </p>
           <label class="device-field" for="reelsUrl">
             <span class="device-field__label">
@@ -312,6 +313,42 @@
           >
             Drop a short video here
           </div>
+
+          <p class="device-block__title reels-subhead">Import collection</p>
+          <label class="device-field" for="reelsCollectionUrls">
+            <span class="device-field__label">
+              <strong>URL list</strong>
+              <small>One Instagram Reel link per line</small>
+            </span>
+            <textarea
+              id="reelsCollectionUrls"
+              class="reels-input reels-textarea"
+              rows="4"
+              placeholder="https://www.instagram.com/reel/…&#10;https://www.instagram.com/reel/…"
+            ></textarea>
+          </label>
+          <label class="device-field" for="reelsCollectionName">
+            <span class="device-field__label">
+              <strong>Collection name</strong>
+              <small>Optional</small>
+            </span>
+            <input type="text" id="reelsCollectionName" class="reels-input" placeholder="Saved productivity" autocomplete="off" />
+          </label>
+          <div class="settings-links">
+            <button type="button" id="reelsImportCollection" class="device-refresh">Import collection</button>
+            <label class="device-refresh reels-file-label">
+              Upload ZIP
+              <input type="file" id="reelsZipFile" accept=".zip,application/zip" hidden />
+            </label>
+            <button type="button" id="reelsGraphImport" class="device-refresh" title="Uses your Meta tokens — account media, not personal Saved">
+              Graph media
+            </button>
+          </div>
+          <p class="device-hint" id="reelsGraphHint">
+            Graph path needs INSTAGRAM_* tokens and lists your Business account media — not personal Saved.
+            Prefer paste / ZIP / export folder for Saved collections.
+          </p>
+
           <ul id="reelsList" class="reels-list" aria-live="polite"></ul>
           <p id="reelsStatus" class="device-hint" hidden></p>
         </div>

@@ -323,7 +323,7 @@ Rules:
 - screen: look|act|flash_fill for display control. camera: see what user shows via webcam.
 - SAFETY: never clear/overwrite text Voxoryl did not type; never delete files outside the Voxoryl project. Fail closed.
 - android: emulator E2E (start/install/smoke). sandbox: Hyper-V disposable VM for untrusted software then destroy.
-- ingest: save reel/link/tip into knowledge vault. reels: share Instagram Reel URL/file with VOXORYL inbox, or recall “what was that reel about?”. whatsapp: status|send|ingest.
+- ingest: save reel/link/tip into knowledge vault. reels: share Instagram Reel URL/file/collection with VOXORYL; gate before knowledge; recall, quarantine, or “what did you learn from that collection?”. whatsapp: status|send|ingest.
 - mcp: action=list|call for MCP servers. code_act: goal=... for sandboxed Python in workspace.
 - melody: hum→MIDI / find song by lyrics / place in DAW. Args: action=analyze|to_midi|find_song|place.
 - media: auto image/video loop. leads: scout/draft MJML/approve/send.
@@ -776,10 +776,45 @@ async def route_and_act(message: str, *, force_council: bool = False) -> dict[st
                 "save this tip",
                 "ingest this",
                 "from instagram",
+                "import my saved",
+                "import saved reels",
+                "import my reels",
+                "import collection",
+                "quarantined reel",
+                "show quarantine",
+                "show quarantined",
+                "what did you learn",
+                "learned from that collection",
             )
         ):
             about = any(k in lower for k in ("what was that reel", "what was the reel", "about that reel", "about the reel"))
-            if about or "instagram.com" in lower or "instagr.am" in lower:
+            quarantine = any(k in lower for k in ("quarantined", "show quarantine", "show quarantined"))
+            learned = any(
+                k in lower
+                for k in ("what did you learn", "learned from that collection", "from that collection")
+            )
+            import_col = any(
+                k in lower
+                for k in (
+                    "import my saved",
+                    "import saved reels",
+                    "import my reels",
+                    "import collection",
+                    "saved reels",
+                )
+            )
+            if about or quarantine or learned or import_col or "instagram.com" in lower or "instagr.am" in lower:
+                action = (
+                    "about"
+                    if about
+                    else "quarantined"
+                    if quarantine
+                    else "learned"
+                    if learned
+                    else "import"
+                    if import_col
+                    else "ingest"
+                )
                 plan.update(
                     {
                         "mode": "direct",
@@ -788,7 +823,7 @@ async def route_and_act(message: str, *, force_council: bool = False) -> dict[st
                             {
                                 "name": "reels",
                                 "args": {
-                                    "action": "about" if about else "ingest",
+                                    "action": action,
                                     "message": message,
                                 },
                             }
@@ -1222,6 +1257,11 @@ async def _dispatch(name: str, args: dict[str, Any], message: str) -> Any:
             reel_id=str(args.get("reel_id") or ""),
             video_path=str(args.get("video_path") or ""),
             caption=str(args.get("caption") or ""),
+            collection_id=str(args.get("collection_id") or ""),
+            folder_path=str(args.get("folder_path") or ""),
+            urls_text=str(args.get("urls_text") or ""),
+            use_graph=bool(args.get("use_graph")),
+            name=str(args.get("name") or ""),
         )
     if name == "whatsapp":
         return await tool_whatsapp(

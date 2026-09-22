@@ -980,6 +980,16 @@ body.is-ready .shell {
   border-radius: 12px;
   outline: none;
 }
+.reels-textarea {
+  resize: vertical;
+  min-height: 5.2rem;
+  line-height: 1.4;
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 0.72rem;
+}
+.reels-subhead {
+  margin-top: 0.85rem;
+}
 .reels-input:focus {
   border-color: rgba(74, 140, 255, 0.45);
   box-shadow: 0 0 0 3px rgba(74, 140, 255, 0.12);
@@ -1012,7 +1022,7 @@ body.is-ready .shell {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  max-height: 9.5rem;
+  max-height: 12rem;
   overflow: auto;
 }
 .reels-list li {
@@ -1032,6 +1042,35 @@ body.is-ready .shell {
   font-size: 0.66rem;
   line-height: 1.35;
   color: var(--muted);
+}
+.reels-badge {
+  display: inline-block;
+  margin-left: 0.3rem;
+  padding: 0.06rem 0.32rem;
+  border-radius: 6px;
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+.reels-badge--promoted {
+  background: rgba(34, 140, 90, 0.14);
+  color: #1a6b42;
+}
+.reels-badge--quarantined {
+  background: rgba(180, 120, 20, 0.16);
+  color: #8a5a08;
+}
+.reels-badge--rejected {
+  background: rgba(180, 50, 40, 0.12);
+  color: #9b2c22;
+}
+.reels-badge--ready,
+.reels-badge--understood,
+.reels-badge--needs_file {
+  background: rgba(74, 140, 255, 0.12);
+  color: #2a5fbf;
 }
 .device-hint {
   margin: 0;
