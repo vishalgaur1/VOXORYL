@@ -5,7 +5,7 @@ Thanks for helping **Voxy** stay local-first and honest.
 ## Before you start
 
 1. Fork + clone, use Python **3.11+**, create a venv, `pip install -r requirements.txt`.
-2. Copy `.env.example` → `.env` (never commit secrets or anything under `data/`).
+2. First run: `scripts/install.ps1` / `install.sh` (or `python -m voxoryl.bootstrap`). Config lands in the OS user-data folder as `config.env` — never commit secrets.
 3. Run: `python scripts/launch_voxoryl.py --console` or `python run.py`.
 
 ## What we want

@@ -20,9 +20,23 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
-RUNTIME_DIR = ROOT / "data" / "runtime"
-LOG_DIR = ROOT / "data" / "logs"
-SESSION_PATH = RUNTIME_DIR / "session.json"
+
+
+def _user_runtime_dirs() -> tuple[Path, Path, Path]:
+    """Logs/session live in OS user-data, not the install folder."""
+    try:
+        from voxoryl.paths import ensure_user_dirs, user_data_subdir
+
+        ensure_user_dirs()
+        data = user_data_subdir()
+    except Exception:
+        data = ROOT / "data"
+    runtime = data / "runtime"
+    logs = data / "logs"
+    return runtime, logs, runtime / "session.json"
+
+
+RUNTIME_DIR, LOG_DIR, SESSION_PATH = _user_runtime_dirs()
 CANDIDATE_PORTS = (3848, 3847, 3849)  # prefer 3848 when 3847 is Cursor / busy
 
 
@@ -34,8 +48,25 @@ def _now() -> str:
 
 
 def ensure_dirs() -> None:
+    global RUNTIME_DIR, LOG_DIR, SESSION_PATH
+    RUNTIME_DIR, LOG_DIR, SESSION_PATH = _user_runtime_dirs()
     RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
     LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def log_dir() -> Path:
+    ensure_dirs()
+    return LOG_DIR
+
+
+def session_path() -> Path:
+    ensure_dirs()
+    return SESSION_PATH
+
+
+def runtime_dir() -> Path:
+    ensure_dirs()
+    return RUNTIME_DIR
 
 
 def python_exe(*, windowed: bool = False) -> Path:
@@ -73,9 +104,15 @@ def is_local_data_dir(data_dir: Any) -> bool:
     s = str(data_dir or "")
     if not s:
         return False
-    if s.startswith("/workspace") or s.startswith("/home/") and "Voxoryl" not in s:
+    low = s.lower().replace("\\", "/")
+    if "voxoryl" in low:
+        return True
+    if "application support" in low or "/.local/share/" in low:
+        return True
+    if s.startswith("/workspace"):
         return False
-    return bool(s[1:2] == ":" or "\\" in s or "Voxoryl" in s)
+    return bool((len(s) >= 2 and s[1] == ":") or "\\" in s)
+
 
 
 def ollama_reachable(timeout: float = 1.5) -> bool:
@@ -125,8 +162,8 @@ def ensure_ollama() -> dict[str, Any]:
             "error": "Ollama not found. Install from https://ollama.com/download",
         }
 
-    log_path = LOG_DIR / "ollama.log"
     ensure_dirs()
+    log_path = LOG_DIR / "ollama.log"
     log_f = open(log_path, "a", encoding="utf-8", errors="replace")
     log_f.write(f"\n--- ollama serve {_now()} ---\n")
     log_f.flush()
@@ -193,6 +230,7 @@ def choose_port() -> tuple[str, int]:
 
 
 def read_session() -> dict[str, Any] | None:
+    ensure_dirs()
     if not SESSION_PATH.exists():
         return None
     try:
@@ -210,6 +248,7 @@ def write_session(data: dict[str, Any]) -> Path:
 
 
 def clear_session() -> None:
+    ensure_dirs()
     try:
         if SESSION_PATH.exists():
             SESSION_PATH.unlink()

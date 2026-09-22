@@ -108,6 +108,35 @@ Receive Reels you share without logging into Instagram. To **post as VOXORYL**, 
 
 **Requirements:** Python **3.11+**, optional [Ollama](https://ollama.com/download).
 
+### First run (recommended — zero setup)
+
+**Clone:**
+
+```bash
+git clone https://github.com/vishalgaur1/VOXORYL.git
+cd VOXORYL
+
+# Windows (PowerShell)
+powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
+
+# macOS / Linux
+chmod +x scripts/install.sh && ./scripts/install.sh
+```
+
+**Release zip:** unzip → run the same `scripts/install.ps1` or `scripts/install.sh`.
+
+The installer creates a venv, copies templates into your **OS user-data folder** (not the git folder), probes hardware, prefers a strong **already-installed** Ollama model when it fits, otherwise pulls a small/fitting model, writes model prefs into `config.env`, then launches the widget.
+
+| OS | User data (memory, knowledge, reels, `config.env`) |
+|----|-----------------------------------------------------|
+| Windows | `%LOCALAPPDATA%\VOXORYL\` |
+| macOS | `~/Library/Application Support/VOXORYL/` |
+| Linux | `~/.local/share/voxoryl/` |
+
+Deleting the clone or zip folder does **not** delete that user-data directory.
+
+### Manual / developer
+
 ```bash
 git clone https://github.com/vishalgaur1/VOXORYL.git
 cd VOXORYL
@@ -120,7 +149,7 @@ python -m venv .venv
 # source .venv/bin/activate
 
 pip install -r requirements.txt
-cp .env.example .env
+python -m voxoryl.bootstrap   # seeds OS user-data from setup/ templates
 ```
 
 ```bash
@@ -132,6 +161,18 @@ python scripts/launch_voxoryl.py --console
 - Command center: http://127.0.0.1:3847  
 - Voice widget: http://127.0.0.1:3847/widget  
 - Mind map: http://127.0.0.1:3847/mindmap  
+
+### Model tiers (hardware)
+
+Bootstrap / Doctor use a **Hardware Score** (RAM + VRAM + cores) and [`setup/models.json`](setup/models.json):
+
+| Tier | Typical PC | Chat class |
+|------|------------|------------|
+| Lite / CPU-only | Low RAM or no GPU | `0.5b`–`1.5b` |
+| Balanced | ~4–8 GB VRAM, ~12–24 GB RAM | `qwen3.5:4b` + fast `0.5b` |
+| Strong / Beast | More VRAM/RAM | larger chat / vision |
+
+Already-installed compatible Ollama tags are preferred over downloading defaults. Low-RAM machines never pull huge weights by default.
 
 ## Download a Release (no git required)
 
@@ -151,11 +192,19 @@ Push a `v*` tag → [`.github/workflows/release.yml`](.github/workflows/release.
 ### Install from the zip
 
 1. Download the zip for your OS from the latest [Release](https://github.com/vishalgaur1/VOXORYL/releases).
-2. Unzip; install [Python 3.11+](https://www.python.org/downloads/).
-3. `python -m venv .venv` → activate → `pip install -r requirements.txt` → copy `.env.example` → `.env`.
-4. `python scripts/launch_voxoryl.py --console`
+2. Unzip; install [Python 3.11+](https://www.python.org/downloads/) if needed.
+3. **Windows:** `powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1`  
+   **macOS / Linux:** `chmod +x scripts/install.sh && ./scripts/install.sh`
+4. Optional: double-click a future `VOXORYL-Launcher.exe` (PyInstaller helper next to the zip) — still runs the same bootstrap. Full GUI installer EXE is **not** shipped yet.
 
-Secrets and `data/` are **never** in Release zips.
+Secrets and personal `data/` are **never** in Release zips — they are created under your OS user-data folder.
+
+## Uninstall
+
+- Removing the git clone / Release folder only removes **code**. Your memory, knowledge, reels, and `config.env` stay in the user-data path above.
+- Shortcuts: `python scripts/uninstall_voxoryl.py`
+- Wipe personal data (asks for `--yes`):  
+  `python scripts/uninstall_voxoryl.py --wipe-user-data --yes`
 
 ## Packages (Docker / GHCR)
 
@@ -168,9 +217,9 @@ docker run --rm -p 3847:3847 ghcr.io/vishalgaur1/voxoryl:latest
 
 Details: [docs/PACKAGES.md](docs/PACKAGES.md) · Image: [ghcr.io/vishalgaur1/voxoryl](https://github.com/vishalgaur1/VOXORYL/pkgs/container/voxoryl)
 
-## Configure (`.env`)
+## Configure (`.env` / `config.env`)
 
-Copy `.env.example` → `.env`. Never commit `.env`.
+Repo ships [`.env.example`](.env.example) only. First run writes **`config.env`** into the OS user-data folder (never commit secrets). Optional: set `VOXORYL_USE_REPO_DATA=1` to keep data next to the clone for development.
 
 | Variable | Purpose |
 |---|---|
@@ -178,14 +227,15 @@ Copy `.env.example` → `.env`. Never commit `.env`.
 | `VOXORYL_OWNER_NAME` / `VOXORYL_OWNER_EMAIL` | Optional Chrome profile matching |
 | `COMPUTER_USE_ENABLED` | Screen click/type (default `false`) |
 | `INSTAGRAM_ACCESS_TOKEN`, `INSTAGRAM_BUSINESS_ACCOUNT_ID` | Optional — post Reels *as* VOXORYL |
+| `VOXORYL_MAIN_MODEL` / `VOXORYL_FAST_MODEL` | Local Ollama tags (set by bootstrap) |
 
 See [`.env.example`](.env.example) for the full list.
 
 ## Privacy
 
-- Everything under `data/` is **gitignored**.
-- Clones get `setup/` templates only.
-- Read [`SECURITY.md`](SECURITY.md): never commit `.env`; **rotate keys** if exposed.
+- Personal files live under the **OS user-data** directory (gitignored conceptually — outside the repo).
+- Repo `data/` is a placeholder; clones get `setup/` templates only.
+- Read [`SECURITY.md`](SECURITY.md): never commit secrets; **rotate keys** if exposed.
 
 ## Platform notes
 

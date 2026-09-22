@@ -13,9 +13,15 @@ from pathlib import Path
 from typing import Any
 
 from voxoryl.hardware import detect_hardware
+from voxoryl.paths import repo_root, user_data_subdir, user_env_path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = repo_root()
 CATALOG_PATH = ROOT / "setup" / "models.json"
+
+
+def _config_env_path() -> Path:
+    """User config.env (preferred) — never write secrets into the repo."""
+    return user_env_path()
 
 
 def load_catalog(path: Path | None = None) -> dict[str, Any]:
@@ -82,13 +88,13 @@ def pull_model(name: str, *, timeout: int = 3600) -> dict[str, Any]:
 
 
 def _env_model(key: str, fallback: str | None = None) -> str | None:
-    env_path = ROOT / ".env"
-    if env_path.exists():
-        m = re.search(rf"(?m)^{re.escape(key)}=(.+)$", env_path.read_text(encoding="utf-8"))
-        if m:
-            val = m.group(1).strip().strip('"').strip("'")
-            if val:
-                return val
+    for env_path in (_config_env_path(), ROOT / ".env"):
+        if env_path.exists():
+            m = re.search(rf"(?m)^{re.escape(key)}=(.+)$", env_path.read_text(encoding="utf-8"))
+            if m:
+                val = m.group(1).strip().strip('"').strip("'")
+                if val:
+                    return val
     return os.getenv(key) or fallback
 
 
@@ -268,25 +274,57 @@ def _pick_tier(hw: dict[str, Any], catalog: dict[str, Any]) -> dict[str, Any]:
 
 
 def recommend_models(hw: dict[str, Any] | None = None, catalog: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Hardware + installed-model aware plan (delegates to model_planner)."""
     catalog = catalog or load_catalog()
     hw = hw or detect_hardware()
     default = catalog.get("default_bundle") or {}
-    current_chat = os.getenv("OLLAMA_MODEL") or default.get("chat") or "qwen3.5:4b"
-    # Prefer .env if present
-    env_path = ROOT / ".env"
-    if env_path.exists():
-        m = re.search(r"(?m)^OLLAMA_MODEL=(.+)$", env_path.read_text(encoding="utf-8"))
-        if m:
-            current_chat = m.group(1).strip().strip('"').strip("'")
+    current_chat = (
+        _env_model("VOXORYL_MAIN_MODEL")
+        or _env_model("OLLAMA_MODEL")
+        or os.getenv("OLLAMA_MODEL")
+        or default.get("chat")
+        or "qwen3.5:4b"
+    )
 
-    tier = _pick_tier(hw, catalog)
-    suggested_chat = tier.get("chat")
-    suggested_vision = tier.get("vision")
-    suggested_embed = tier.get("embed") or default.get("embed") or "nomic-embed-text"
+    try:
+        from voxoryl.model_planner import plan_models
+
+        plan = plan_models(hw=hw, catalog=catalog)
+    except Exception:
+        tier = _pick_tier(hw, catalog)
+        plan = {
+            "chat_model": tier.get("chat"),
+            "fast_model": default.get("fast") or "qwen2.5:0.5b",
+            "vision_model": tier.get("vision"),
+            "embed_model": tier.get("embed") or default.get("embed") or "nomic-embed-text",
+            "tier": tier.get("id"),
+            "reason": tier.get("reason"),
+            "hardware_score": hw.get("hardware_score"),
+            "installed": ollama_installed_models(),
+            "pulls_needed": [],
+            "installed_used": {},
+        }
+        # synthesize minimal tier dict for message
+        plan["_tier_label"] = tier.get("label")
+        plan["_alts"] = tier.get("alts") or []
+
+    suggested_chat = plan.get("chat_model")
+    suggested_vision = plan.get("vision_model")
+    suggested_embed = plan.get("embed_model")
+    suggested_fast = plan.get("fast_model")
+    tier_id = plan.get("tier")
+    tier_label = plan.get("_tier_label")
+    if not tier_label:
+        for t in catalog.get("tiers") or []:
+            if t.get("id") == tier_id:
+                tier_label = t.get("label")
+                break
+        if tier_id == "cpu_only":
+            tier_label = "CPU-only"
+        tier_label = tier_label or str(tier_id)
 
     action = "keep"
     if suggested_chat and suggested_chat != current_chat:
-        # crude size compare via known tier order
         order = [t.get("chat") for t in (catalog.get("tiers") or [])]
         try:
             cur_i = order.index(current_chat) if current_chat in order else None
@@ -294,31 +332,41 @@ def recommend_models(hw: dict[str, Any] | None = None, catalog: dict[str, Any] |
             if cur_i is not None and sug_i is not None:
                 action = "upgrade" if sug_i > cur_i else "downgrade"
             else:
-                # fallback: compare tier id vs balanced
                 action = "switch"
         except ValueError:
             action = "switch"
 
+    tier_for_msg = {
+        "id": tier_id,
+        "label": tier_label,
+        "reason": plan.get("reason"),
+    }
     return {
         "ok": True,
         "hardware": hw,
+        "hardware_score": plan.get("hardware_score") or hw.get("hardware_score"),
+        "plan": plan,
         "current": {
             "chat": current_chat,
-            "vision": os.getenv("OLLAMA_VISION_MODEL") or default.get("vision"),
-            "embed": os.getenv("OLLAMA_EMBED_MODEL") or default.get("embed"),
+            "fast": _env_model("VOXORYL_FAST_MODEL") or default.get("fast"),
+            "vision": _env_model("OLLAMA_VISION_MODEL") or os.getenv("OLLAMA_VISION_MODEL") or default.get("vision"),
+            "embed": _env_model("OLLAMA_EMBED_MODEL") or os.getenv("OLLAMA_EMBED_MODEL") or default.get("embed"),
         },
         "recommended": {
-            "tier": tier.get("id"),
-            "label": tier.get("label"),
+            "tier": tier_id,
+            "label": tier_label,
             "chat": suggested_chat,
+            "fast": suggested_fast,
             "vision": suggested_vision,
             "embed": suggested_embed,
-            "alts": tier.get("alts") or [],
-            "reason": tier.get("reason"),
+            "alts": plan.get("_alts") or (plan.get("defaults_for_tier") or {}).get("alts") or [],
+            "reason": plan.get("reason"),
+            "pulls_needed": plan.get("pulls_needed") or [],
+            "installed_used": plan.get("installed_used") or {},
         },
         "action": action,
-        "message": _human_message(action, current_chat, suggested_chat, tier, hw),
-        "installed": ollama_installed_models(),
+        "message": _human_message(action, current_chat, suggested_chat, tier_for_msg, hw),
+        "installed": plan.get("installed") or ollama_installed_models(),
     }
 
 
@@ -336,21 +384,27 @@ def _human_message(action: str, current: str, suggested: str | None, tier: dict[
 
 
 def _patch_env(updates: dict[str, str], env_path: Path | None = None) -> dict[str, Any]:
-    path = env_path or (ROOT / ".env")
+    """Write model keys into user config.env — never clobber unrelated API keys."""
+    from voxoryl.paths import ensure_user_dirs, rewrite_data_dir_in_env
+
+    ensure_user_dirs()
+    path = env_path or _config_env_path()
     if not path.exists():
         example = ROOT / ".env.example"
         if example.exists():
             path.write_text(example.read_text(encoding="utf-8"), encoding="utf-8")
+            rewrite_data_dir_in_env(path)
         else:
             path.write_text("", encoding="utf-8")
     text = path.read_text(encoding="utf-8")
+    # Only touch model-related keys (callers should already limit updates)
     for key, value in updates.items():
         if not value:
             continue
         pattern = re.compile(rf"(?m)^{re.escape(key)}=.*$")
         line = f"{key}={value}"
         if pattern.search(text):
-            text = pattern.sub(line, text)
+            text = pattern.sub(lambda _m: line, text)
         else:
             text = text.rstrip() + "\n" + line + "\n"
     path.write_text(text, encoding="utf-8")
@@ -360,22 +414,22 @@ def _patch_env(updates: dict[str, str], env_path: Path | None = None) -> dict[st
 def apply_recommendation(*, pull: bool = True, use_recommended: bool = True) -> dict[str, Any]:
     rec = recommend_models()
     suggested = rec.get("recommended") or {}
-    updates = {}
+    updates: dict[str, str] = {}
     if use_recommended:
         if suggested.get("chat"):
             updates["OLLAMA_MODEL"] = str(suggested["chat"])
+            updates["VOXORYL_MAIN_MODEL"] = str(suggested["chat"])
+        if suggested.get("fast"):
+            updates["VOXORYL_FAST_MODEL"] = str(suggested["fast"])
         if suggested.get("vision"):
             updates["OLLAMA_VISION_MODEL"] = str(suggested["vision"])
-        elif suggested.get("vision") is None:
-            # leave vision as-is if tier says null
-            pass
         if suggested.get("embed"):
             updates["OLLAMA_EMBED_MODEL"] = str(suggested["embed"])
     env_result = _patch_env(updates) if updates else {"ok": True, "updates": {}}
 
     pulls = []
     if pull:
-        for key in ("chat", "embed", "vision"):
+        for key in ("chat", "fast", "embed", "vision"):
             name = suggested.get(key)
             if name:
                 pulls.append(pull_model(str(name)))
@@ -392,40 +446,58 @@ def apply_recommendation(*, pull: bool = True, use_recommended: bool = True) -> 
 
 def install_default_models(*, also_recommend: bool = True) -> dict[str, Any]:
     """
-    Called on clone/install: pull the default bundle, then advise upgrade/downgrade.
+    Called on clone/install: plan for this PC, pull only needed models, advise.
+    Prefers already-installed compatible tags; avoids huge pulls on low RAM.
     """
     catalog = load_catalog()
     hw = detect_hardware()
-    to_pull: list[str] = list(catalog.get("pull_on_clone") or [])
-    # Conditional extras by VRAM
-    cond = catalog.get("pull_on_clone_if_vram_gb_gte") or {}
-    vram = float(hw.get("best_vram_gb") or 0)
-    for threshold, models in cond.items():
-        try:
-            if vram >= float(threshold):
-                to_pull.extend(models)
-        except (TypeError, ValueError):
-            continue
-    # de-dupe preserve order
-    seen = set()
-    ordered = []
+    try:
+        from voxoryl.model_planner import plan_models, plan_to_env_updates
+
+        plan = plan_models(hw=hw, catalog=catalog)
+        to_pull = list(plan.get("pulls_needed") or [])
+        # Ensure chat/fast/embed from plan are candidates even if list empty
+        for key in ("chat_model", "fast_model", "embed_model", "vision_model"):
+            name = plan.get(key)
+            if name and name not in to_pull:
+                if not _model_present(str(name)):
+                    to_pull.append(str(name))
+        _patch_env(plan_to_env_updates(plan))
+    except Exception:
+        to_pull = list(catalog.get("pull_on_clone") or [])
+        plan = None
+        cond = catalog.get("pull_on_clone_if_vram_gb_gte") or {}
+        vram = float(hw.get("best_vram_gb") or 0)
+        for threshold, models in cond.items():
+            try:
+                if vram >= float(threshold):
+                    to_pull.extend(models)
+            except (TypeError, ValueError):
+                continue
+
+    seen: set[str] = set()
+    ordered: list[str] = []
     for m in to_pull:
-        if m not in seen:
+        if m and m not in seen:
             seen.add(m)
             ordered.append(m)
 
     pulls = [pull_model(m) for m in ordered]
     advice = recommend_models(hw=hw, catalog=catalog) if also_recommend else None
 
-    # Ensure .env has default chat if missing
+    # Ensure user config.env has default chat if missing
     default = catalog.get("default_bundle") or {}
-    env_path = ROOT / ".env"
+    env_path = _config_env_path()
     if not env_path.exists() and (ROOT / ".env.example").exists():
+        from voxoryl.paths import ensure_user_dirs, rewrite_data_dir_in_env
+
+        ensure_user_dirs()
         env_path.write_text((ROOT / ".env.example").read_text(encoding="utf-8"), encoding="utf-8")
+        rewrite_data_dir_in_env(env_path)
     if env_path.exists() and default.get("chat"):
         text = env_path.read_text(encoding="utf-8")
-        if "OLLAMA_MODEL=" not in text:
-            _patch_env({"OLLAMA_MODEL": str(default["chat"])})
+        if "OLLAMA_MODEL=" not in text and "VOXORYL_MAIN_MODEL=" not in text:
+            _patch_env({"OLLAMA_MODEL": str(default["chat"]), "VOXORYL_MAIN_MODEL": str(default["chat"])})
 
     report = {
         "ok": all(p.get("ok") for p in pulls) if pulls else True,
@@ -446,7 +518,10 @@ def install_default_models(*, also_recommend: bool = True) -> dict[str, Any]:
 
 
 def _save_report(report: dict[str, Any]) -> Path:
-    data_dir = ROOT / "data"
+    from voxoryl.paths import ensure_user_dirs
+
+    ensure_user_dirs()
+    data_dir = user_data_subdir()
     data_dir.mkdir(parents=True, exist_ok=True)
     path = data_dir / "hardware_profile.json"
     # strip huge stdout

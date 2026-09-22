@@ -44,19 +44,19 @@ if str(ROOT) not in sys.path:
 
 from voxoryl.lifecycle import (  # noqa: E402
     CREATE_NO_WINDOW,
-    LOG_DIR,
-    SESSION_PATH,
     choose_port,
     clear_session,
     ensure_dirs,
     ensure_ollama,
     find_browser,
+    log_dir,
     open_url_in_browser,
     pin_voxoryl_windows,
     port_in_use,
     probe_status,
     python_exe,
     read_session,
+    session_path,
     stop_session,
     terminate_pid,
     write_session,
@@ -70,7 +70,9 @@ CREATE_NEW_PROCESS_GROUP = 0x00000200
 def _log(msg: str, *, console: bool) -> None:
     line = f"[voxoryl-launch] {msg}"
     ensure_dirs()
-    with (LOG_DIR / "launcher.log").open("a", encoding="utf-8") as f:
+    from voxoryl import lifecycle as _lc
+
+    with (_lc.log_dir() / "launcher.log").open("a", encoding="utf-8") as f:
         f.write(time.strftime("%Y-%m-%d %H:%M:%S ") + line + "\n")
     if console:
         print(line, flush=True)
@@ -368,7 +370,7 @@ $lnk.Save()
 
 def _start_server(port: int, *, console: bool) -> tuple[subprocess.Popen | None, Path]:
     ensure_dirs()
-    log_path = LOG_DIR / "server.log"
+    log_path = log_dir() / "server.log"
     env = os.environ.copy()
     env["VOXORYL_PORT"] = str(port)
     env["VOXORYL_HOST"] = "127.0.0.1"
@@ -640,7 +642,7 @@ def run_product(
 
     mode, port, existing = _prepare_port()
     server_proc: subprocess.Popen | None = None
-    log_path = LOG_DIR / "server.log"
+    log_path = log_dir() / "server.log"
     started_server = False
     own_for_shutdown = False
     server_pid: int | None = None
@@ -720,7 +722,7 @@ def run_product(
         "log": str(log_path),
         "widget_pid": None,
         "widget_kind": None,
-        "session_file": str(SESSION_PATH),
+        "session_file": str(session_path()),
     }
 
     if smoke:

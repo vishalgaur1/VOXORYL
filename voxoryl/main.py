@@ -324,6 +324,8 @@ async def status() -> dict[str, Any]:
         "online_advisor": bool(settings.groq_api_key.strip()),
         "data_dir": str(settings.voxoryl_data_dir.resolve()),
         "workspace": str(settings.voxoryl_workspace.resolve()),
+        "user_data_dir": str(settings.user_config_path.parent.resolve()),
+        "config_env": str(settings.user_config_path.resolve()),
         "daemon": True,
         "desktop_session": _is_desktop_session(),
         "pid": os.getpid(),

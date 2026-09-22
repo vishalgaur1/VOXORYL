@@ -1,9 +1,17 @@
-# data/
+# Private data (legacy / placeholder in the repo)
 
-Private runtime directory — **gitignored**.
+**Your real memory, knowledge, reels, and logs no longer live here by default.**
 
-On first run, Voxoryl bootstraps empty files here from `setup/templates/`.
-Clone the repo, copy `.env.example` → `.env`, then launch; your knowledge, memory, and logs stay local.
+VOXORYL stores personal data in the OS user-data folder:
 
-Shared Reels live under `reels/` (index, collections, + `media/`) — never commit.
-Each reel may be gated (`promote` / `quarantine` / `reject`); only promoted items enter the knowledge vault.
+| OS | Path |
+|----|------|
+| Windows | `%LOCALAPPDATA%\VOXORYL\` |
+| macOS | `~/Library/Application Support/VOXORYL/` |
+| Linux | `~/.local/share/voxoryl/` |
+
+On first run (or `scripts/install.ps1` / `install.sh`), anything still under this repo `data/` is **copied once** into that folder — the repo copy is not deleted.
+
+Developers who want the old layout: set `VOXORYL_USE_REPO_DATA=1`.
+
+Never commit secrets or personal files. See the main README → **First run** and **Uninstall**.

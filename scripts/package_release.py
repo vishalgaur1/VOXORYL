@@ -81,44 +81,54 @@ SKIP_REL_GLOBS_CONTAIN = (
 README_RELEASE = """# VOXORYL — Release package
 
 This zip is a **portable Python source package** for Windows, macOS, and Linux.
-It is **not** a frozen EXE / .app installer. You need Python 3.11+ installed.
+It is **not** a full GUI installer EXE. You need Python 3.11+ installed.
 
-Native installers (PyInstaller / platform bundles) are on the roadmap; until then
-this source zip + launch scripts is the supported GitHub Release.
+**Zero-setup first step:** run the install script (creates venv, OS user-data,
+model plan, then launches). An optional one-file `VOXORYL-Launcher.exe`
+(PyInstaller) may sit beside the zip; it only runs the same bootstrap.
 
 ## What's included
 
-- `voxoryl/` package, `scripts/` launchers, `setup/` templates
+- `voxoryl/` package, `scripts/` launchers + `install.ps1` / `install.sh`, `setup/` templates
 - `requirements.txt`, `pyproject.toml`, `README.md`, `LICENSE`
-- `.env.example` (copy to `.env` — never commit real secrets)
+- `.env.example` (seeded into OS user-data as `config.env` — never commit secrets)
 
 ## What's NOT included (by design)
 
-- `.env` / API keys
-- `data/` (private memory, knowledge, logs — created on first run)
-- `.venv` (create your own)
+- `.env` / API keys / `config.env`
+- Personal `data/` (memory, knowledge, reels — created under OS user-data)
+- `.venv` (created by install script)
 - Git history and CI workflows
 
-## Install (all platforms)
+## Install (all platforms) — recommended
 
 1. Unzip this archive.
 2. Install [Python 3.11+](https://www.python.org/downloads/) (Windows: check "Add Python to PATH").
-3. In a terminal, from the unzipped folder:
+3. From the unzipped folder:
 
 ```bash
-python -m venv .venv
-
 # Windows (PowerShell)
-.\\.venv\\Scripts\\Activate.ps1
-# macOS / Linux
-# source .venv/bin/activate
+powershell -ExecutionPolicy Bypass -File .\\scripts\\install.ps1
 
-pip install -r requirements.txt
-cp .env.example .env
-# Edit .env as needed (local Ollama by default; optional cloud keys)
+# macOS / Linux
+chmod +x scripts/install.sh && ./scripts/install.sh
 ```
 
-4. Launch:
+That runs `scripts/bootstrap_voxoryl.py`: venv → deps → user-data dirs → hardware
+probe → prefer installed Ollama models → pull only what fits → launch.
+
+### Where your data lives
+
+| OS | Path |
+|----|------|
+| Windows | `%LOCALAPPDATA%\\VOXORYL\\` |
+| macOS | `~/Library/Application Support/VOXORYL/` |
+| Linux | `~/.local/share/voxoryl/` |
+
+Deleting this zip folder does **not** delete that user-data directory.
+Uninstall shortcuts / wipe data: `python scripts/uninstall_voxoryl.py` (see README).
+
+## Manual launch (after install)
 
 ```bash
 # Cross-platform
@@ -132,7 +142,8 @@ chmod +x scripts/launch_voxoryl.sh
 ./scripts/launch_voxoryl.sh
 ```
 
-Optional: install [Ollama](https://ollama.com/download) for on-device models.
+Optional: install [Ollama](https://ollama.com/download) for on-device models
+(bootstrap tries winget/brew and prints the download link if missing).
 
 - Command center: http://127.0.0.1:3847
 - Voice widget: http://127.0.0.1:3847/widget

@@ -12,6 +12,20 @@ from voxoryl.config import settings
 async def run_doctor() -> dict[str, Any]:
     checks: dict[str, Any] = {}
 
+    try:
+        from voxoryl.paths import user_data_dir, user_env_path
+
+        ud = user_data_dir()
+        checks["user_data"] = {
+            "ok": ud.exists(),
+            "path": str(ud.resolve()),
+            "config_env": str(user_env_path().resolve()),
+            "config_env_exists": user_env_path().exists(),
+            "note": "Personal data lives here — deleting the install/repo does not wipe it.",
+        }
+    except Exception as exc:
+        checks["user_data"] = {"ok": False, "error": str(exc)}
+
     checks["data_dir"] = {
         "ok": settings.voxoryl_data_dir.exists(),
         "path": str(settings.voxoryl_data_dir.resolve()),
@@ -31,6 +45,25 @@ async def run_doctor() -> dict[str, Any]:
         checks["hardware"] = {"ok": True, **hw}
     except Exception as exc:
         checks["hardware"] = {"ok": False, "error": str(exc)}
+
+    try:
+        from voxoryl.model_planner import plan_models
+
+        plan = plan_models()
+        checks["model_plan"] = {
+            "ok": True,
+            "tier": plan.get("tier"),
+            "hardware_score": plan.get("hardware_score"),
+            "chat_model": plan.get("chat_model"),
+            "fast_model": plan.get("fast_model"),
+            "vision_model": plan.get("vision_model"),
+            "embed_model": plan.get("embed_model"),
+            "pulls_needed": plan.get("pulls_needed") or [],
+            "reason": plan.get("reason"),
+            "missing": plan.get("pulls_needed") or [],
+        }
+    except Exception as exc:
+        checks["model_plan"] = {"ok": False, "error": str(exc)}
 
     try:
         from voxoryl.transcribe import asr_status
@@ -98,7 +131,7 @@ async def run_doctor() -> dict[str, Any]:
     }
 
     # Soft-optional: ollama / playwright / silero may be down without blocking core runtime
-    soft_optional = {"ollama", "playwright"}
+    soft_optional = {"ollama", "playwright", "model_plan"}
     failed = [k for k, v in checks.items() if isinstance(v, dict) and v.get("ok") is False]
     hard_failed = [k for k in failed if k not in soft_optional]
     soft_failed = [k for k in failed if k in soft_optional]

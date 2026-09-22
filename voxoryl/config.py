@@ -2,11 +2,36 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from voxoryl.paths import (
+    env_file_candidates,
+    ensure_user_dirs,
+    migrate_from_repo_if_needed,
+    resolve_data_dir,
+    resolve_workspace,
+    user_data_subdir,
+    user_env_path,
+    user_workspace_dir,
+)
+
+# Ensure OS user-data root exists and migrate once from repo-local data/.env
+try:
+    migrate_from_repo_if_needed()
+    ensure_user_dirs()
+except Exception:
+    pass
+
+_ENV_FILES = tuple(str(p) for p in env_file_candidates()) or (str(user_env_path()),)
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=_ENV_FILES,
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     ollama_base_url: str = "http://127.0.0.1:11434"
     ollama_model: str = "qwen3.5:4b"
@@ -25,6 +50,7 @@ class Settings(BaseSettings):
     google_api_key: str = ""
     openrouter_api_key: str = ""
     nvidia_api_key: str = ""
+    # Defaults resolve to OS user-data dir (not the git clone folder).
     voxoryl_data_dir: Path = Path("./data")
     voxoryl_port: int = 3847
     voxoryl_host: str = "127.0.0.1"
@@ -81,6 +107,16 @@ class Settings(BaseSettings):
     voxoryl_owner_email: str = ""
     voxoryl_chrome_profile_match: str = ""
     voxoryl_chrome_profile_prefer: str = "photo"  # photo | orange | any
+
+    @field_validator("voxoryl_data_dir", mode="before")
+    @classmethod
+    def _data_dir(cls, v: object) -> Path:
+        return resolve_data_dir(v if v is not None else None)  # type: ignore[arg-type]
+
+    @field_validator("voxoryl_workspace", mode="before")
+    @classmethod
+    def _workspace(cls, v: object) -> Path:
+        return resolve_workspace(v if v is not None else None)  # type: ignore[arg-type]
 
     @property
     def owner_name(self) -> str:
@@ -144,5 +180,13 @@ class Settings(BaseSettings):
     def mindmap_html_path(self) -> Path:
         return self.voxoryl_data_dir / "mindmap.html"
 
+    @property
+    def user_config_path(self) -> Path:
+        return user_env_path()
+
+
+# Re-export helpers so callers can discover paths without importing paths.py
+DEFAULT_USER_DATA = user_data_subdir()
+DEFAULT_WORKSPACE = user_workspace_dir()
 
 settings = Settings()
