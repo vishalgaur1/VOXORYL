@@ -151,6 +151,16 @@
         </span>
         <span class="quick-action__label">Ask</span>
       </button>
+      <button type="button" id="reelsQuickBtn" class="quick-action" title="Share a Reel with Voxy">
+        <span class="quick-action__icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <rect x="4" y="2.5" width="14" height="17" rx="3" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M8 8.5h6M8 11.5h6M8 14.5h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            <circle cx="15.5" cy="5.5" r="1.1" fill="currentColor"/>
+          </svg>
+        </span>
+        <span class="quick-action__label">Reels</span>
+      </button>
     </nav>
 
     <footer class="footer">
@@ -264,6 +274,46 @@
           </label>
           <p id="deviceHint" class="device-hint">Allow mic access once to show device names.</p>
           <button type="button" id="refreshDevicesBtn" class="device-refresh">Refresh devices</button>
+        </div>
+
+        <div class="device-block" id="reelsBlock">
+          <p class="device-block__title">Reels</p>
+          <p class="device-hint" id="reelsHint">
+            Share an Instagram Reel with Voxy — paste a public link or drop a short video.
+            Stored privately under data/reels/. No Instagram login scraping.
+          </p>
+          <label class="device-field" for="reelsUrl">
+            <span class="device-field__label">
+              <strong>Reel URL</strong>
+              <small>instagram.com/reel/…</small>
+            </span>
+            <input type="url" id="reelsUrl" class="reels-input" placeholder="https://www.instagram.com/reel/…" autocomplete="off" />
+          </label>
+          <label class="device-field" for="reelsCaption">
+            <span class="device-field__label">
+              <strong>Caption hint</strong>
+              <small>Optional — helps when oEmbed is empty</small>
+            </span>
+            <input type="text" id="reelsCaption" class="reels-input" placeholder="What it’s about…" autocomplete="off" />
+          </label>
+          <div class="settings-links">
+            <button type="button" id="reelsSubmitUrl" class="device-refresh">Save link</button>
+            <label class="device-refresh reels-file-label">
+              Upload video
+              <input type="file" id="reelsFile" accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm" hidden />
+            </label>
+          </div>
+          <div
+            id="reelsDrop"
+            class="reels-drop"
+            tabindex="0"
+            role="button"
+            aria-label="Drop a short video here"
+          >
+            Drop a short video here
+          </div>
+          <ul id="reelsList" class="reels-list" aria-live="polite"></ul>
+          <p id="reelsStatus" class="device-hint" hidden></p>
         </div>
 
         <div class="device-block">

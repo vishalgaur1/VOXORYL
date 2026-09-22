@@ -58,6 +58,21 @@ VOXORYL is a **desktop companion**, not a chat site with optional plugins. Talk 
 
 - Native **voice orb** (pywebview / WebView2 on Windows; browser `--app` fallback) at `/widget`.
 - Command center dashboard at `/`, mind map at `/mindmap` — Local/Cloud toggle, mic/speaker pickers, Talk vs Council.
+- **Reels** quick action + Settings panel: paste an Instagram Reel URL or drop a short video into Voxy’s private inbox (`data/reels/`).
+
+### Instagram (VOXORYL’s own account)
+
+VOXORYL can **receive** Reels you share (inbox above) without logging into Instagram.
+
+To **post as VOXORYL**, create a Professional (Business/Creator) Instagram account for the product, link it to a Facebook Page, and a Meta developer app with Instagram Content Publishing:
+
+1. [Meta for Developers](https://developers.facebook.com/) → create an app → add **Instagram** product.
+2. Convert/create an IG Professional account; get the **Instagram Business Account ID**.
+3. Generate a long-lived **Page/User access token** with `instagram_basic`, `instagram_content_publish`, `pages_show_list` (and related permissions Meta currently requires).
+4. Copy into `.env` (never commit): `INSTAGRAM_ACCESS_TOKEN`, `INSTAGRAM_BUSINESS_ACCOUNT_ID` (optional `INSTAGRAM_APP_ID` / `INSTAGRAM_APP_SECRET` / `INSTAGRAM_GRAPH_VERSION`).
+5. Call `publish_reel(video_url, caption)` via `voxoryl.instagram` or `POST /api/reels/publish` — Graph needs a **public HTTPS video URL** in this P0 scaffold (local-file resumable upload is not wired yet).
+
+**ToS:** public oEmbed or files you upload only — no credential stuffing, no private-session scraping.
 
 ### Windows vs macOS (honest matrix)
 
@@ -135,6 +150,7 @@ Copy `.env.example` → `.env`. Never commit `.env`.
 | `VOXORYL_OWNER_NAME` / `VOXORYL_OWNER_EMAIL` | Optional Chrome “my profile” matching |
 | `COMPUTER_USE_ENABLED` | Screen click/type (default `false`) |
 | `OBSIDIAN_VAULT`, `GITHUB_TOKEN`, `EMAIL_IMAP_*` | Optional connectors |
+| `INSTAGRAM_ACCESS_TOKEN`, `INSTAGRAM_BUSINESS_ACCOUNT_ID` | Optional — post Reels *as* VOXORYL via Meta Graph |
 
 See [`.env.example`](.env.example) for the full list.
 

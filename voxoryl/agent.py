@@ -308,7 +308,7 @@ Return ONLY JSON:
 {
   "mode": "council" | "direct" | "answer",
   "speak": "short spoken reply (1 sentence if caveman skill on). Only cite RELEVANT KNOWLEDGE when it clearly answers this message — never dump unrelated vault facts on greetings/small talk. For pure actions (open app, new tab, click, mute) that succeed, speak MUST be empty string — never narrate 'Opening…' or read URLs aloud.",
-  "tools": [{"name": "research|market_scan|notes|remember|knowledge|github|email|computer|screen|marketing|video|mcp|code_act|ingest|whatsapp|melody|media|leads|approvals|sites|qna|companion|bookings|docs|prefs|food|health|spend|wellbeing|todos|neuro|android|sandbox|camera|music|books|style_colors|curiosity|windows|net_profile|self_upgrade|multitask|planner|sale_watch|i18n", "args": {}}],
+  "tools": [{"name": "research|market_scan|notes|remember|knowledge|github|email|computer|screen|marketing|video|mcp|code_act|ingest|reels|whatsapp|melody|media|leads|approvals|sites|qna|companion|bookings|docs|prefs|food|health|spend|wellbeing|todos|neuro|android|sandbox|camera|music|books|style_colors|curiosity|windows|net_profile|self_upgrade|multitask|planner|sale_watch|i18n", "args": {}}],
   "use_council": false,
   "confidence": 0.0
 }
@@ -323,7 +323,7 @@ Rules:
 - screen: look|act|flash_fill for display control. camera: see what user shows via webcam.
 - SAFETY: never clear/overwrite text Voxoryl did not type; never delete files outside the Voxoryl project. Fail closed.
 - android: emulator E2E (start/install/smoke). sandbox: Hyper-V disposable VM for untrusted software then destroy.
-- ingest: save reel/link/tip into knowledge vault. whatsapp: status|send|ingest.
+- ingest: save reel/link/tip into knowledge vault. reels: share Instagram Reel URL/file with VOXORYL inbox, or recall “what was that reel about?”. whatsapp: status|send|ingest.
 - mcp: action=list|call for MCP servers. code_act: goal=... for sandboxed Python in workspace.
 - melody: hum→MIDI / find song by lyrics / place in DAW. Args: action=analyze|to_midi|find_song|place.
 - media: auto image/video loop. leads: scout/draft MJML/approve/send.
@@ -763,8 +763,40 @@ async def route_and_act(message: str, *, force_council: bool = False) -> dict[st
             a in lower for a in ("notepad", "spotify", "vscode", "vs code", "cursor", "whatsapp")
         ):
             plan.update({"mode": "direct", "use_council": False, "tools": [{"name": "windows", "args": {"action": "new_tab", "message": message}}]})
-        elif any(k in lower for k in ("save this reel", "save this tip", "ingest this", "from instagram")):
-            plan.update({"mode": "direct", "use_council": False, "tools": [{"name": "ingest", "args": {"message": message}}]})
+        elif any(
+            k in lower
+            for k in (
+                "what was that reel",
+                "what was the reel",
+                "about that reel",
+                "about the reel",
+                "share this reel",
+                "share reel",
+                "save this reel",
+                "save this tip",
+                "ingest this",
+                "from instagram",
+            )
+        ):
+            about = any(k in lower for k in ("what was that reel", "what was the reel", "about that reel", "about the reel"))
+            if about or "instagram.com" in lower or "instagr.am" in lower:
+                plan.update(
+                    {
+                        "mode": "direct",
+                        "use_council": False,
+                        "tools": [
+                            {
+                                "name": "reels",
+                                "args": {
+                                    "action": "about" if about else "ingest",
+                                    "message": message,
+                                },
+                            }
+                        ],
+                    }
+                )
+            else:
+                plan.update({"mode": "direct", "use_council": False, "tools": [{"name": "ingest", "args": {"message": message}}]})
         elif "whatsapp" in lower:
             plan.update({"mode": "direct", "use_council": False, "tools": [{"name": "whatsapp", "args": {"action": "status" if "send" not in lower else "send", "message": message}}]})
         elif "mcp" in lower:
@@ -1173,12 +1205,23 @@ async def _dispatch(name: str, args: dict[str, Any], message: str) -> Any:
             action=str(args.get("action") or "auto"),
             message=str(args.get("message") or message),
         )
-    if name in {"ingest", "share", "reel"}:
+    if name in {"ingest", "share"}:
         return await tool_ingest_share(
             url=str(args.get("url") or ""),
             text=str(args.get("text") or ""),
             message=str(args.get("message") or message),
             use_screen=bool(args.get("use_screen")),
+        )
+    if name in {"reels", "reel", "instagram"}:
+        from voxoryl.reels import tool_reels
+
+        return await tool_reels(
+            action=str(args.get("action") or "status"),
+            url=str(args.get("url") or ""),
+            message=str(args.get("message") or message),
+            reel_id=str(args.get("reel_id") or ""),
+            video_path=str(args.get("video_path") or ""),
+            caption=str(args.get("caption") or ""),
         )
     if name == "whatsapp":
         return await tool_whatsapp(

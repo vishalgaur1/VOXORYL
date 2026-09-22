@@ -1268,6 +1268,7 @@ function openSettings() {
   if (settingsSheet) settingsSheet.hidden = false;
   refreshAudioDevices({ requestPermission: false });
   refreshInference();
+  if (typeof refreshReelsList === "function") refreshReelsList();
 }
 
 function closeSettings() {
@@ -1499,6 +1500,165 @@ const askQuickBtn = document.getElementById("askQuickBtn");
 if (askQuickBtn) {
   askQuickBtn.addEventListener("click", () => {
     toggleTypeEntry(true);
+  });
+}
+
+// ---- Reels inbox (share WITH Voxy) ----
+const reelsQuickBtn = document.getElementById("reelsQuickBtn");
+const reelsUrl = document.getElementById("reelsUrl");
+const reelsCaption = document.getElementById("reelsCaption");
+const reelsSubmitUrl = document.getElementById("reelsSubmitUrl");
+const reelsFile = document.getElementById("reelsFile");
+const reelsDrop = document.getElementById("reelsDrop");
+const reelsList = document.getElementById("reelsList");
+const reelsStatus = document.getElementById("reelsStatus");
+const reelsBlock = document.getElementById("reelsBlock");
+
+function setReelsStatus(msg, { error = false } = {}) {
+  if (!reelsStatus) return;
+  if (!msg) {
+    reelsStatus.hidden = true;
+    reelsStatus.textContent = "";
+    return;
+  }
+  reelsStatus.hidden = false;
+  reelsStatus.textContent = msg;
+  reelsStatus.style.color = error ? "#b42318" : "";
+}
+
+async function refreshReelsList() {
+  if (!reelsList) return;
+  try {
+    const res = await fetch(apiUrl("/api/reels?limit=8"));
+    const data = await res.json();
+    const items = data.items || [];
+    reelsList.innerHTML = "";
+    if (!items.length) {
+      reelsList.innerHTML = "<li><span>No reels yet — paste a link or drop a video.</span></li>";
+      return;
+    }
+    for (const item of items) {
+      const li = document.createElement("li");
+      const title = item.title || "Reel";
+      const summary = item.summary || item.caption || item.transcript || "Saved";
+      li.innerHTML = `<strong></strong><span></span>`;
+      li.querySelector("strong").textContent = title;
+      li.querySelector("span").textContent = String(summary).slice(0, 160);
+      reelsList.appendChild(li);
+    }
+  } catch (err) {
+    setReelsStatus("Could not load reels list", { error: true });
+  }
+}
+
+async function submitReelUrl() {
+  const url = (reelsUrl && reelsUrl.value || "").trim();
+  const caption = (reelsCaption && reelsCaption.value || "").trim();
+  if (!url) {
+    setReelsStatus("Paste an Instagram Reel URL first", { error: true });
+    return;
+  }
+  setReelsStatus("Saving reel…");
+  try {
+    const res = await fetch(apiUrl("/api/reels"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url, caption }),
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      setReelsStatus(data.hint || data.error || "Save failed", { error: true });
+      return;
+    }
+    if (reelsUrl) reelsUrl.value = "";
+    setReelsStatus(data.speak || data.hint || "Saved.");
+    await refreshReelsList();
+  } catch (err) {
+    setReelsStatus("Network error saving reel", { error: true });
+  }
+}
+
+async function uploadReelFile(file) {
+  if (!file) return;
+  setReelsStatus(`Uploading ${file.name}…`);
+  const fd = new FormData();
+  fd.append("file", file, file.name);
+  const caption = (reelsCaption && reelsCaption.value || "").trim();
+  const url = (reelsUrl && reelsUrl.value || "").trim();
+  if (caption) fd.append("caption", caption);
+  if (url) fd.append("url", url);
+  try {
+    const res = await fetch(apiUrl("/api/reels"), { method: "POST", body: fd });
+    const data = await res.json();
+    if (!data.ok) {
+      setReelsStatus(data.hint || data.error || "Upload failed", { error: true });
+      return;
+    }
+    if (reelsFile) reelsFile.value = "";
+    setReelsStatus(data.speak || "Uploaded.");
+    await refreshReelsList();
+  } catch (err) {
+    setReelsStatus("Network error uploading reel", { error: true });
+  }
+}
+
+function openReelsPanel() {
+  openSettings();
+  if (reelsBlock) {
+    requestAnimationFrame(() => {
+      reelsBlock.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+  }
+  refreshReelsList();
+}
+
+if (reelsQuickBtn) {
+  reelsQuickBtn.addEventListener("click", () => openReelsPanel());
+}
+if (reelsSubmitUrl) {
+  reelsSubmitUrl.addEventListener("click", () => submitReelUrl());
+}
+if (reelsUrl) {
+  reelsUrl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      submitReelUrl();
+    }
+  });
+}
+if (reelsFile) {
+  reelsFile.addEventListener("change", () => {
+    const f = reelsFile.files && reelsFile.files[0];
+    if (f) uploadReelFile(f);
+  });
+}
+if (reelsDrop) {
+  ["dragenter", "dragover"].forEach((evt) => {
+    reelsDrop.addEventListener(evt, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      reelsDrop.classList.add("is-drag");
+    });
+  });
+  ["dragleave", "drop"].forEach((evt) => {
+    reelsDrop.addEventListener(evt, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      reelsDrop.classList.remove("is-drag");
+    });
+  });
+  reelsDrop.addEventListener("drop", (e) => {
+    const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) uploadReelFile(f);
+  });
+  reelsDrop.addEventListener("click", () => {
+    if (reelsFile) reelsFile.click();
+  });
+  reelsDrop.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      if (reelsFile) reelsFile.click();
+    }
   });
 }
 

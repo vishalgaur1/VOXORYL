@@ -161,6 +161,8 @@ Put reusable skills in `data/skills.json` (private) or `setup/templates/skills.j
 - [x] Idea backlog (`setup/IDEAS.md`) — prune later
 - [x] Flash form-fill via clipboard paste + identity (`voxoryl/identity.py`, screen `flash_fill`)
 - [x] Reel / share ingest → `data/reel_vault.md` + knowledge (`voxoryl/ingest.py`)
+- [x] Reels inbox (URL + video upload → `data/reels/`, oEmbed, optional ASR/summary, widget **Reels**) — `voxoryl/reels.py`, `GET|POST /api/reels`
+- [x] Instagram publish scaffold (Meta Graph tokens in `.env`) — `voxoryl/instagram.py`
 - [x] WhatsApp bridge stub (Desktop send + forward ingest)
 - [ ] MCP filesystem + browser + git  
 - [ ] Offline TTS (Piper) / Whisper STT  

@@ -969,6 +969,70 @@ body.is-ready .shell {
   border-color: rgba(74, 140, 255, 0.45);
   box-shadow: 0 0 0 3px rgba(74, 140, 255, 0.12);
 }
+.reels-input {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.78rem;
+  padding: 0.62rem 0.75rem;
+  border-radius: 12px;
+  outline: none;
+}
+.reels-input:focus {
+  border-color: rgba(74, 140, 255, 0.45);
+  box-shadow: 0 0 0 3px rgba(74, 140, 255, 0.12);
+}
+.reels-file-label {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+.reels-drop {
+  margin-top: 0.35rem;
+  border: 1px dashed var(--line-strong);
+  border-radius: 12px;
+  padding: 0.85rem 0.75rem;
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--muted);
+  background: rgba(247, 249, 252, 0.8);
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+}
+.reels-drop.is-drag {
+  border-color: rgba(74, 140, 255, 0.55);
+  background: rgba(74, 140, 255, 0.06);
+  color: var(--ink-soft);
+}
+.reels-list {
+  list-style: none;
+  margin: 0.55rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 9.5rem;
+  overflow: auto;
+}
+.reels-list li {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.55rem 0.65rem;
+  background: #fff;
+}
+.reels-list strong {
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 0.15rem;
+}
+.reels-list span {
+  font-size: 0.66rem;
+  line-height: 1.35;
+  color: var(--muted);
+}
 .device-hint {
   margin: 0;
   font-size: 0.66rem;

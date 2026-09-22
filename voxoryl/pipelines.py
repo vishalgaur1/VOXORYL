@@ -211,9 +211,52 @@ async def pipeline_chrome(message: str) -> dict[str, Any]:
 
 
 async def pipeline_save_reel(message: str) -> dict[str, Any]:
-    use_screen = any(k in message.lower() for k in ("screen", "this reel", "on my screen", "whats on"))
-    # If no URL in message, prefer screen/inbox capture
-    has_url = "http://" in message.lower() or "https://" in message.lower()
+    lower = message.lower()
+    about = any(
+        k in lower
+        for k in (
+            "what was that reel",
+            "what was the reel",
+            "about that reel",
+            "about the reel",
+            "what was that about",
+        )
+    )
+    if about:
+        from voxoryl.reels import recall_about
+
+        result = await recall_about()
+        return {
+            "ok": bool(result.get("ok")),
+            "pipeline": "save_reel",
+            "speak": str(result.get("speak") or result.get("error") or "No reel recall."),
+            "result": result,
+        }
+
+    from voxoryl.reels import extract_reel_urls, ingest_url, tool_reels
+
+    urls = extract_reel_urls(message)
+    if urls:
+        result = await ingest_url(urls[0])
+        return {
+            "ok": bool(result.get("ok")),
+            "pipeline": "save_reel",
+            "speak": str(result.get("speak") or result.get("error") or result.get("hint") or "Reel saved."),
+            "result": result,
+        }
+
+    use_screen = any(k in lower for k in ("screen", "this reel", "on my screen", "whats on"))
+    has_url = "http://" in lower or "https://" in lower
+    # Prefer reels tool when user says share/save with vague content
+    if any(k in lower for k in ("share reel", "share this reel", "reels inbox")):
+        result = await tool_reels(action="ingest", message=message)
+        return {
+            "ok": bool(result.get("ok")),
+            "pipeline": "save_reel",
+            "speak": str(result.get("speak") or result.get("error") or result.get("hint") or "Reels inbox done."),
+            "result": result,
+        }
+
     result = await tool_ingest_share(
         message=message,
         text=message,
@@ -1455,12 +1498,19 @@ def match_pipeline(message: str) -> str | None:
         for k in (
             "save this reel",
             "save the reel",
+            "share this reel",
+            "share reel",
+            "what was that reel",
+            "what was the reel",
+            "about that reel",
+            "about the reel",
             "ingest this",
             "save this tip",
             "save this link",
             "from instagram",
             "productivity reel",
             "share inbox",
+            "reels inbox",
         )
     ):
         return "save_reel"

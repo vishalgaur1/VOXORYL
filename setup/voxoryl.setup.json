@@ -13,6 +13,8 @@
     "data/video_jobs",
     "data/screenshots",
     "data/share_inbox",
+    "data/reels",
+    "data/reels/media",
     "data/melodies",
     "data/media_jobs",
     "data/leads",

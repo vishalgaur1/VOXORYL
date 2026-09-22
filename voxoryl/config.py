@@ -69,6 +69,13 @@ class Settings(BaseSettings):
     vercel_token: str = ""
     vercel_team_id: str = ""
 
+    # Instagram — VOXORYL's own Business/Creator account (Meta Graph API)
+    instagram_access_token: str = ""
+    instagram_business_account_id: str = ""
+    instagram_app_id: str = ""
+    instagram_app_secret: str = ""
+    instagram_graph_version: str = "v21.0"
+
     # Owner / Chrome profile matching (optional — never hardcode personal names in source)
     voxoryl_owner_name: str = ""
     voxoryl_owner_email: str = ""

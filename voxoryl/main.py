@@ -349,6 +349,11 @@ async def status() -> dict[str, Any]:
             "powertoys": True,
             "software_knowledge": True,
             "content_safety": True,
+            "reels": True,
+            "instagram_publish": bool(
+                (getattr(settings, "instagram_access_token", "") or "").strip()
+                and (getattr(settings, "instagram_business_account_id", "") or "").strip()
+            ),
         },
         "tools": [
             "research",
@@ -362,6 +367,7 @@ async def status() -> dict[str, Any]:
             "code_act",
             "pipeline",
             "ingest",
+            "reels",
             "whatsapp",
             "flash_fill",
             "powertoys",
@@ -573,6 +579,109 @@ async def melody_upload_file(
         message=message,
         instrument=instrument,
         place_in_daw=place_in_daw,
+    )
+
+
+class ReelsBody(BaseModel):
+    url: str = ""
+    caption: str = ""
+    message: str = ""
+    action: str = "ingest"
+    reel_id: str = ""
+    video_path: str = ""
+    distill: bool = True
+    transcribe: bool = True
+
+
+@app.get("/api/reels")
+async def reels_list(limit: int = 50) -> dict[str, Any]:
+    from voxoryl.instagram import status as ig_status
+    from voxoryl.reels import list_reels
+
+    out = list_reels(limit=limit)
+    out["instagram"] = ig_status()
+    return out
+
+
+@app.get("/api/reels/{reel_id}")
+async def reels_get(reel_id: str) -> dict[str, Any]:
+    from voxoryl.reels import get_reel
+
+    return get_reel(reel_id)
+
+
+@app.post("/api/reels")
+async def reels_create(request: Request) -> dict[str, Any]:
+    """
+    Share a Reel with VOXORYL.
+    - JSON: {"url": "https://www.instagram.com/reel/…", "caption": "…"}
+    - Multipart: file=video + optional url/caption form fields
+    """
+    from voxoryl.reels import ingest_file, ingest_url, tool_reels
+
+    content_type = (request.headers.get("content-type") or "").lower()
+    if "application/json" in content_type:
+        try:
+            payload = await request.json()
+        except Exception:
+            payload = {}
+        if not isinstance(payload, dict):
+            payload = {}
+        body = ReelsBody.model_validate(payload)
+        action = (body.action or "ingest").strip().lower()
+        if action in {"list", "status", "about", "recall", "publish", "post"}:
+            return await tool_reels(
+                action=action,
+                url=body.url,
+                message=body.message,
+                reel_id=body.reel_id,
+                video_path=body.video_path,
+                caption=body.caption,
+            )
+        target = (body.url or body.message or "").strip()
+        if not target:
+            raise HTTPException(status_code=400, detail="url or message required")
+        return await ingest_url(target, caption_hint=body.caption, distill=body.distill)
+
+    form = await request.form()
+    upload = form.get("file")
+    url = str(form.get("url") or "").strip()
+    caption = str(form.get("caption") or "").strip()
+    distill_raw = str(form.get("distill") if form.get("distill") is not None else "true").lower()
+    transcribe_raw = str(form.get("transcribe") if form.get("transcribe") is not None else "true").lower()
+    distill = distill_raw not in {"0", "false", "no"}
+    transcribe = transcribe_raw not in {"0", "false", "no"}
+
+    if upload is not None and hasattr(upload, "read"):
+        data = await upload.read()
+        filename = getattr(upload, "filename", None) or "reel.mp4"
+        return await ingest_file(
+            data,
+            str(filename),
+            url=url,
+            caption_hint=caption,
+            distill=distill,
+            transcribe=transcribe,
+        )
+    if url:
+        return await ingest_url(url, caption_hint=caption, distill=distill)
+    raise HTTPException(
+        status_code=400,
+        detail="Provide JSON {url} or multipart file / form url",
+    )
+
+
+@app.post("/api/reels/publish")
+async def reels_publish(body: ReelsBody) -> dict[str, Any]:
+    from voxoryl.reels import tool_reels
+
+    return await tool_reels(
+        action="publish",
+        reel_id=body.reel_id,
+        video_path=body.video_path,
+        caption=body.caption,
+        url=body.url,
+        message=body.message,
     )
 
 
