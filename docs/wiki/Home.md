@@ -9,4 +9,5 @@ This wiki is the short human guide. Full install and flags live in the README �
 - [README](https://github.com/vishalgaur1/VOXORYL/blob/main/README.md)
 - [Releases (Win / Mac)](https://github.com/vishalgaur1/VOXORYL/releases)
 - [Site](https://vishalgaur1.github.io/VOXORYL/)
+- [Issues](https://github.com/vishalgaur1/VOXORYL/issues)
 - [[FAQ]] · [[Roadmap]] · [[Architecture]]
