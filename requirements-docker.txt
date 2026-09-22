@@ -1,0 +1,15 @@
+# Slim deps for the ghcr.io API image (no desktop GUI / Win32 automation).
+fastapi==0.115.12
+uvicorn[standard]==0.34.2
+httpx==0.28.1
+pydantic==2.11.3
+pydantic-settings==2.9.1
+apscheduler==3.11.0
+python-dotenv==1.1.0
+aiofiles==24.1.0
+edge-tts>=7.2.8
+Pillow==11.2.1
+duckduckgo-search==8.0.2
+numpy==2.2.5
+python-multipart==0.0.20
+huggingface-hub>=0.30.0

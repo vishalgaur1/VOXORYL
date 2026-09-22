@@ -72,17 +72,23 @@ jobs:
           body: |
             ## VOXORYL ${{ github.ref_name }}
 
-            **Download:** prefer `VOXORYL-*-source.zip` — one portable Python package for Windows, macOS, and Linux.
+            ### Pick your platform (Releases ≠ Packages)
+            | Download | Platform |
+            |---|---|
+            | `VOXORYL-*-windows.zip` | **Windows** |
+            | `VOXORYL-*-macos.zip` | **macOS** |
+            | `VOXORYL-*-linux.zip` | Linux |
+            | `VOXORYL-*-source.zip` | Canonical cross-platform source |
 
-            Platform-named zips (`*-windows.zip`, `*-macos.zip`, `*-linux.zip`) contain the **same source tree** today. They exist so CI proves packaging on each OS; native EXE/app bundles are a future roadmap item.
+            Today these are portable **Python source** packages (+ launch scripts). Same tree per OS label; native EXE/.app is roadmap. Docker API image lives under **Packages** (`ghcr.io/vishalgaur1/voxoryl`), not here.
 
             ### Quick install
-            1. Unzip
+            1. Unzip the asset for your OS
             2. Install Python 3.11+
             3. `python -m venv .venv` → activate → `pip install -r requirements.txt`
             4. Copy `.env.example` → `.env`
             5. `python scripts/launch_voxoryl.py --console`
 
-            See `README_RELEASE.md` inside the zip. Do not expect `.env` or `data/` in the archive.
+            See `README_RELEASE.md` inside the zip. No `.env` or `data/` in the archive.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

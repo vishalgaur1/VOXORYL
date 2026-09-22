@@ -1,0 +1,31 @@
+name: Feature request
+description: Idea that fits local-first VOXORYL
+title: "[feat] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / use case
+      placeholder: What are you trying to do with Voxy?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      placeholder: How should it work? Prefer on-device where possible.
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Primary platform
+      options: [Windows, macOS, Both, N/A]
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Fits the product?
+      options:
+        - label: Keeps tools / computer-use on the local PC
+        - label: Degrades honestly if the OS can’t support it

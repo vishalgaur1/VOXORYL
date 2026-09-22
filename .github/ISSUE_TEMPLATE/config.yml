@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Releases (Win / Mac zips)
+    url: https://github.com/vishalgaur1/VOXORYL/releases
+    about: Download portable packages — not the Packages sidebar (that’s the Docker image).
+  - name: Security
+    url: https://github.com/vishalgaur1/VOXORYL/blob/main/SECURITY.md
+    about: Report a vulnerability privately when possible.

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VOXORYL — Voxy · Local voice for your PC</title>
+  <meta name="description" content="VOXORYL (Voxy) — talk to your computer. Opens apps, Chrome, YouTube. On-device." />
+  <meta property="og:title" content="VOXORYL (Voxy)" />
+  <meta property="og:description" content="Local PC voice assistant — on-device, Windows & Mac." />
+  <meta property="og:image" content="assets/social-preview.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="assets/voxoryl-icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Sora:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg0: #070a12;
+      --bg1: #0c101c;
+      --ink: #e8eef8;
+      --muted: #8a94a6;
+      --royal: #4a8cff;
+      --glass: rgba(255, 255, 255, 0.06);
+      --line: rgba(160, 200, 255, 0.18);
+      --font-d: "Outfit", system-ui, sans-serif;
+      --font-b: "Sora", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: var(--font-b);
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(74, 140, 255, 0.22), transparent 55%),
+        radial-gradient(ellipse 50% 40% at 80% 80%, rgba(126, 200, 248, 0.08), transparent 50%),
+        linear-gradient(165deg, var(--bg0), var(--bg1) 60%, #101628);
+      overflow-x: hidden;
+    }
+    .orb {
+      position: fixed;
+      width: 42vmin;
+      height: 42vmin;
+      border-radius: 50%;
+      top: 18%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: radial-gradient(circle at 35% 30%, rgba(230, 240, 255, 0.25), transparent 45%),
+                  radial-gradient(circle at 50% 50%, rgba(74, 140, 255, 0.15), transparent 70%);
+      border: 1px solid var(--line);
+      box-shadow: 0 0 80px rgba(74, 140, 255, 0.15), inset 0 0 60px rgba(160, 200, 255, 0.08);
+      animation: breathe 7s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .orb::before, .orb::after {
+      content: "";
+      position: absolute;
+      inset: 12%;
+      border-radius: 50%;
+      border: 1px solid rgba(160, 200, 255, 0.25);
+      animation: spin 28s linear infinite;
+    }
+    .orb::after { inset: 22%; animation-direction: reverse; animation-duration: 18s; border-color: rgba(200, 220, 255, 0.2); }
+    @keyframes breathe {
+      0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.85; }
+      50% { transform: translateX(-50%) scale(1.04); opacity: 1; }
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: clamp(3rem, 12vh, 7rem) 1.5rem 4rem;
+      text-align: center;
+      animation: rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .brand {
+      font-family: var(--font-d);
+      font-weight: 700;
+      font-size: clamp(2.6rem, 9vw, 4.2rem);
+      letter-spacing: 0.04em;
+      margin: 0 0 0.35rem;
+      background: linear-gradient(180deg, #fff 30%, #a0c8ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .tag {
+      color: var(--muted);
+      font-size: 1.05rem;
+      margin: 0 0 1.75rem;
+      line-height: 1.5;
+    }
+    .pitch {
+      font-size: 1.15rem;
+      line-height: 1.55;
+      max-width: 28em;
+      margin: 0 auto 2rem;
+      color: #c8d4e8;
+    }
+    .cta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+      margin-bottom: 2.5rem;
+    }
+    a.btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.85rem 1.35rem;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    a.btn:hover { transform: translateY(-2px); }
+    a.primary {
+      background: linear-gradient(135deg, #4a8cff, #3b6ef5);
+      color: #fff;
+      box-shadow: 0 10px 28px rgba(74, 140, 255, 0.35);
+    }
+    a.ghost {
+      background: var(--glass);
+      color: var(--ink);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+    }
+    .meta {
+      font-size: 0.8rem;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+    }
+    .meta a { color: #a0c8ff; }
+    footer {
+      margin-top: 3rem;
+      font-size: 0.75rem;
+      color: #5a6478;
+    }
+  </style>
+</head>
+<body>
+  <div class="orb" aria-hidden="true"></div>
+  <main>
+    <p class="meta" style="margin-bottom:1rem">vox-OR-ill · short name <strong style="color:#c8dcff">Voxy</strong></p>
+    <h1 class="brand">VOXORYL</h1>
+    <p class="tag">Local voice for your PC</p>
+    <p class="pitch">Talk to your computer. Open apps, drive Chrome &amp; YouTube, stay mostly offline. Windows &amp; Mac — on-device by default.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/vishalgaur1/VOXORYL/releases">Download Releases</a>
+      <a class="btn ghost" href="https://github.com/vishalgaur1/VOXORYL">GitHub</a>
+      <a class="btn ghost" href="https://github.com/vishalgaur1/VOXORYL/pkgs/container/voxoryl">Docker (GHCR)</a>
+    </div>
+    <p class="meta">
+      Win/Mac zips → <a href="https://github.com/vishalgaur1/VOXORYL/releases">Releases</a>
+      · API container → <a href="https://github.com/vishalgaur1/VOXORYL/pkgs/container/voxoryl">Packages</a>
+    </p>
+    <footer>© 2026 Vishal Gaur · PolyForm Noncommercial · Commercial licensing available</footer>
+  </main>
+</body>
+</html>
