@@ -21,3 +21,5 @@
 - Searching the wrong org, a typo (`voxeryl`, `voxaryl`), or only “Voxy” (other projects use that name) can hide this repo
 
 Bookmark or share the exact GitHub URL above — that always resolves to this project.
+
+For a short human FAQ / roadmap (not a README dump), see the [Wiki](https://github.com/vishalgaur1/VOXORYL/wiki).
