@@ -1,0 +1,88 @@
+name: Release portable zip
+
+# Tag push (e.g. v0.2.0) → matrix builds source zips → one job attaches assets to the Release.
+# Supported release today: cross-platform Python source package (+ launch scripts).
+# Roadmap: optional PyInstaller / native installers per OS.
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+          - os: windows-latest
+            platform: windows
+          - os: macos-latest
+            platform: macos
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build portable source zip
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF_NAME:-manual}"
+          # Platform-labelled zip (same source tree; proves packaging on each OS)
+          python scripts/package_release.py --version "${TAG}" --platform "${{ matrix.platform }}"
+          # Canonical cross-platform asset (built once on linux)
+          if [ "${{ matrix.platform }}" = "linux" ]; then
+            python scripts/package_release.py --version "${TAG}"
+          fi
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VOXORYL-${{ matrix.platform }}
+          path: release/*.zip
+
+  publish:
+    needs: package
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all package artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: List assets
+        run: find release-assets -type f -name '*.zip' | sort
+
+      - name: Attach to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-assets/*.zip
+          generate_release_notes: true
+          body: |
+            ## VOXORYL ${{ github.ref_name }}
+
+            **Download:** prefer `VOXORYL-*-source.zip` — one portable Python package for Windows, macOS, and Linux.
+
+            Platform-named zips (`*-windows.zip`, `*-macos.zip`, `*-linux.zip`) contain the **same source tree** today. They exist so CI proves packaging on each OS; native EXE/app bundles are a future roadmap item.
+
+            ### Quick install
+            1. Unzip
+            2. Install Python 3.11+
+            3. `python -m venv .venv` → activate → `pip install -r requirements.txt`
+            4. Copy `.env.example` → `.env`
+            5. `python scripts/launch_voxoryl.py --console`
+
+            See `README_RELEASE.md` inside the zip. Do not expect `.env` or `data/` in the archive.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
