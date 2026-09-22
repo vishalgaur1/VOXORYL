@@ -108,22 +108,33 @@ Receive Reels you share without logging into Instagram. To **post as VOXORYL**, 
 
 **Requirements:** Python **3.11+**, optional [Ollama](https://ollama.com/download).
 
-### First run (recommended — zero setup)
+### First run (recommended — Setup Wizard)
 
-**Clone:**
+**Clone or unzip**, then open the wizard (feels like normal software — not a raw terminal script):
 
 ```bash
 git clone https://github.com/vishalgaur1/VOXORYL.git
 cd VOXORYL
 
-# Windows (PowerShell)
-powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
+# Windows — double-click, or:
+scripts\Setup VOXORYL.bat
+# same as:  python scripts\setup_voxoryl.py
 
-# macOS / Linux
-chmod +x scripts/install.sh && ./scripts/install.sh
+# macOS — double-click Setup VOXORYL.command, or:
+chmod +x "scripts/Setup VOXORYL.command" && open "scripts/Setup VOXORYL.command"
+# Linux / any:  python3 scripts/setup_voxoryl.py
 ```
 
-**Release zip:** unzip → run the same `scripts/install.ps1` or `scripts/install.sh`.
+**Pages:** Welcome → License (PolyForm NC) → Install location → Automatic or Custom → optional API keys / prefs → progress log → Launch.
+
+| Mode | What it does |
+|------|----------------|
+| **Automatic** | Runs bootstrap for you: venv, OS user-data dirs, hardware score, Ollama + fitting models, `config.env` |
+| **Custom** | Same pipeline, but you can skip Ollama/model pulls and override chat/fast/vision/embed tags |
+
+Fill cloud keys / owner prefs in the wizard **or skip** and open **Settings → Config & API keys** later inside the widget.
+
+**Terminal-only** (no GUI): `powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1` or `./scripts/install.sh` — still calls the same bootstrap.
 
 The installer creates a venv, copies templates into your **OS user-data folder** (not the git folder), probes hardware, prefers a strong **already-installed** Ollama model when it fits, otherwise pulls a small/fitting model, writes model prefs into `config.env`, then launches the widget.
 
@@ -193,9 +204,11 @@ Push a `v*` tag → [`.github/workflows/release.yml`](.github/workflows/release.
 
 1. Download the zip for your OS from the latest [Release](https://github.com/vishalgaur1/VOXORYL/releases).
 2. Unzip; install [Python 3.11+](https://www.python.org/downloads/) if needed.
-3. **Windows:** `powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1`  
-   **macOS / Linux:** `chmod +x scripts/install.sh && ./scripts/install.sh`
-4. Optional: double-click a future `VOXORYL-Launcher.exe` (PyInstaller helper next to the zip) — still runs the same bootstrap. Full GUI installer EXE is **not** shipped yet.
+3. **Windows:** double-click `scripts\Setup VOXORYL.bat` (or `python scripts\setup_voxoryl.py`)  
+   **macOS:** double-click `scripts/Setup VOXORYL.command`  
+   **Linux:** `python3 scripts/setup_voxoryl.py`  
+   Terminal fallback: `install.ps1` / `install.sh` (bootstrap only).
+4. Optional later: a PyInstaller `VOXORYL-Launcher.exe` beside the zip can open the same wizard/bootstrap. Full MSI/Inno installer is **not** required for this release.
 
 Secrets and personal `data/` are **never** in Release zips — they are created under your OS user-data folder.
 

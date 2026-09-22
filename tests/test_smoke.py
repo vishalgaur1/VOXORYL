@@ -95,3 +95,27 @@ def test_model_planner_prefers_small_on_low_ram():
     # Must not recommend a huge default on 8GB / no VRAM
     assert "32b" not in chat.lower()
     assert "70b" not in chat.lower()
+
+
+def test_env_config_form_schema():
+    from voxoryl.env_config import ENV_FORM_FIELDS, form_schema
+
+    assert any(f["key"] == "GROQ_API_KEY" for f in ENV_FORM_FIELDS)
+    schema = form_schema(include_values=True, empty_only=False)
+    assert schema.get("ok") is True
+    assert schema.get("path")
+    keys = {f["key"] for f in schema.get("fields") or []}
+    assert "GROQ_API_KEY" in keys
+    assert "VOXORYL_OWNER_NAME" in keys
+    assert "Jarvis" not in str(schema)
+
+
+def test_setup_wizard_script_exists():
+    from pathlib import Path
+
+    from voxoryl.paths import repo_root
+
+    root = repo_root()
+    assert (root / "scripts" / "setup_voxoryl.py").is_file()
+    assert (root / "scripts" / "Setup VOXORYL.bat").is_file()
+    assert (root / "scripts" / "Setup VOXORYL.command").is_file()

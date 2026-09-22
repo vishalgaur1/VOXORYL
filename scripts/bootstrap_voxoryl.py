@@ -26,8 +26,18 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 
 
+_PROGRESS_CB: Any = None
+
+
 def _log(msg: str) -> None:
-    print(f"[voxoryl-bootstrap] {msg}", flush=True)
+    line = f"[voxoryl-bootstrap] {msg}"
+    print(line, flush=True)
+    cb = _PROGRESS_CB
+    if cb is not None:
+        try:
+            cb(line)
+        except Exception:
+            pass
 
 
 def _check_python() -> None:
@@ -184,7 +194,22 @@ def _pull_with_progress(name: str, timeout: int = 3600) -> dict[str, Any]:
         return {"ok": False, "model": name, "error": str(exc)}
 
 
-def bootstrap(*, launch: bool, native: bool, skip_models: bool, console: bool) -> int:
+def bootstrap(
+    *,
+    launch: bool,
+    native: bool,
+    skip_models: bool,
+    console: bool,
+    skip_ollama: bool = False,
+    chat_model: str | None = None,
+    fast_model: str | None = None,
+    vision_model: str | None = None,
+    embed_model: str | None = None,
+    progress_cb: Any = None,
+) -> int:
+    global _PROGRESS_CB
+    _PROGRESS_CB = progress_cb
+
     os.chdir(ROOT)
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
@@ -223,15 +248,42 @@ def bootstrap(*, launch: bool, native: bool, skip_models: bool, console: bool) -
         f"→ tier `{score.get('tier')}` (score {score.get('score')})"
     )
 
-    ollama = _try_install_ollama()
-    if not ollama.get("ok"):
-        _log(ollama.get("error") or "Ollama missing")
-        _log("VOXORYL can still start; add Ollama for local models, or set a cloud key in config.env.")
+    ollama: dict[str, Any] = {"ok": False}
+    if skip_ollama:
+        _log("Skipping Ollama install/start (--skip-ollama)")
+        if _ollama_bin():
+            ollama = {"ok": True, "already": True}
+            _ensure_ollama_running()
     else:
-        if not _ensure_ollama_running():
-            _log("Ollama installed but API not reachable yet — continue anyway.")
+        ollama = _try_install_ollama()
+        if not ollama.get("ok"):
+            _log(ollama.get("error") or "Ollama missing")
+            _log("VOXORYL can still start; add Ollama for local models, or set a cloud key in config.env.")
+        else:
+            if not _ensure_ollama_running():
+                _log("Ollama installed but API not reachable yet — continue anyway.")
 
     plan = plan_models(hw=hw, installed=ollama_installed_models())
+    # Custom overrides from Setup Wizard
+    if chat_model:
+        plan["chat_model"] = chat_model.strip()
+    if fast_model:
+        plan["fast_model"] = fast_model.strip()
+    if vision_model:
+        plan["vision_model"] = vision_model.strip() or None
+    if embed_model:
+        plan["embed_model"] = embed_model.strip()
+    if any((chat_model, fast_model, vision_model, embed_model)):
+        # Recompute pulls for overridden tags
+        installed = set(ollama_installed_models())
+        pulls_needed: list[str] = []
+        for key in ("chat_model", "fast_model", "vision_model", "embed_model"):
+            name = plan.get(key)
+            if name and str(name) not in installed:
+                pulls_needed.append(str(name))
+        plan["pulls_needed"] = pulls_needed
+        plan["reason"] = (plan.get("reason") or "") + " (custom overrides from setup wizard)"
+
     save_plan(plan)
     _log(f"Model plan: chat={plan.get('chat_model')} fast={plan.get('fast_model')} tier={plan.get('tier')}")
     _log(f"Reason: {plan.get('reason')}")
@@ -244,7 +296,9 @@ def bootstrap(*, launch: bool, native: bool, skip_models: bool, console: bool) -
     if not skip_models and ollama.get("ok"):
         for name in plan.get("pulls_needed") or []:
             # Never pull huge models on low tier
-            if plan.get("tier") in ("lite", "cpu_only"):
+            if plan.get("tier") in ("lite", "cpu_only") and not any(
+                (chat_model, fast_model, vision_model, embed_model)
+            ):
                 size_m = re.search(r"(\d+(?:\.\d+)?)b", str(name).lower())
                 if size_m and float(size_m.group(1)) > 4:
                     _log(f"Skipping large model `{name}` on {plan.get('tier')} hardware")
@@ -282,6 +336,11 @@ def main() -> int:
     parser.add_argument("--native", action="store_true", help="Windows native widget")
     parser.add_argument("--console", action="store_true", help="Developer console launch")
     parser.add_argument("--skip-models", action="store_true", help="Do not ollama pull")
+    parser.add_argument("--skip-ollama", action="store_true", help="Do not install/start Ollama")
+    parser.add_argument("--chat-model", default="", help="Override chat/main Ollama tag")
+    parser.add_argument("--fast-model", default="", help="Override fast Ollama tag")
+    parser.add_argument("--vision-model", default="", help="Override vision Ollama tag")
+    parser.add_argument("--embed-model", default="", help="Override embed Ollama tag")
     args = parser.parse_args()
     try:
         return bootstrap(
@@ -289,6 +348,11 @@ def main() -> int:
             native=args.native,
             skip_models=args.skip_models,
             console=args.console,
+            skip_ollama=args.skip_ollama,
+            chat_model=args.chat_model or None,
+            fast_model=args.fast_model or None,
+            vision_model=args.vision_model or None,
+            embed_model=args.embed_model or None,
         )
     except subprocess.CalledProcessError as exc:
         _log(f"Command failed: {exc}")

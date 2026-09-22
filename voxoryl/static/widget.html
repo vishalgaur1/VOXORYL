@@ -353,6 +353,26 @@
           <p id="reelsStatus" class="device-hint" hidden></p>
         </div>
 
+        <details class="settings-accordion" id="configEnvAccordion">
+          <summary class="settings-accordion__summary">
+            <span>
+              <strong>Config &amp; API keys</strong>
+              <small>Fill later — saved to your private config.env</small>
+            </span>
+          </summary>
+          <div class="settings-accordion__body">
+            <p class="device-hint" id="configEnvHint">
+              Optional keys from setup. Leave blank to skip. Secrets stay in your OS user-data folder.
+            </p>
+            <div id="configEnvFields" class="config-env-fields"></div>
+            <p id="configEnvStatus" class="device-hint" hidden></p>
+            <div class="settings-links">
+              <button type="button" id="configEnvSave" class="device-refresh">Save config</button>
+              <button type="button" id="configEnvReload" class="device-refresh">Reload</button>
+            </div>
+          </div>
+        </details>
+
         <div class="device-block">
           <p class="device-block__title">More</p>
           <label class="device-field" for="langSelect">

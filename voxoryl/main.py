@@ -1181,6 +1181,29 @@ async def privacy_api() -> dict[str, Any]:
     return privacy_status()
 
 
+class ConfigEnvBody(BaseModel):
+    updates: dict[str, str] = {}
+    only_nonempty: bool = True
+
+
+@app.get("/api/config/env")
+async def config_env_get(empty_only: bool = False) -> dict[str, Any]:
+    """Schema + values for Settings accordion / setup form fields."""
+    from voxoryl.env_config import form_schema
+
+    return form_schema(include_values=True, empty_only=empty_only)
+
+
+@app.post("/api/config/env")
+async def config_env_post(body: ConfigEnvBody) -> dict[str, Any]:
+    """Upsert user-facing keys into OS user-data config.env (never the repo)."""
+    from voxoryl.env_config import form_schema, patch_env_values
+
+    result = patch_env_values(body.updates or {}, only_nonempty=body.only_nonempty)
+    schema = form_schema(include_values=True, empty_only=False)
+    return {**result, "fields": schema.get("fields") or []}
+
+
 class InferenceBody(BaseModel):
     mode: str = "local"
     provider: str = ""

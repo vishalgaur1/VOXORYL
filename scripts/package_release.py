@@ -81,15 +81,15 @@ SKIP_REL_GLOBS_CONTAIN = (
 README_RELEASE = """# VOXORYL — Release package
 
 This zip is a **portable Python source package** for Windows, macOS, and Linux.
-It is **not** a full GUI installer EXE. You need Python 3.11+ installed.
+It is **not** a full MSI/Inno installer. You need Python 3.11+ installed.
 
-**Zero-setup first step:** run the install script (creates venv, OS user-data,
-model plan, then launches). An optional one-file `VOXORYL-Launcher.exe`
-(PyInstaller) may sit beside the zip; it only runs the same bootstrap.
+**First step:** open the **Setup Wizard** (normal software flow). An optional
+one-file `VOXORYL-Launcher.exe` (PyInstaller) may sit beside the zip and start
+the same wizard/bootstrap.
 
 ## What's included
 
-- `voxoryl/` package, `scripts/` launchers + `install.ps1` / `install.sh`, `setup/` templates
+- `voxoryl/` package, `scripts/` launchers + Setup Wizard + `install.ps1` / `install.sh`, `setup/` templates
 - `requirements.txt`, `pyproject.toml`, `README.md`, `LICENSE`
 - `.env.example` (seeded into OS user-data as `config.env` — never commit secrets)
 
@@ -97,7 +97,7 @@ model plan, then launches). An optional one-file `VOXORYL-Launcher.exe`
 
 - `.env` / API keys / `config.env`
 - Personal `data/` (memory, knowledge, reels — created under OS user-data)
-- `.venv` (created by install script)
+- `.venv` (created by install / wizard)
 - Git history and CI workflows
 
 ## Install (all platforms) — recommended
@@ -107,15 +107,21 @@ model plan, then launches). An optional one-file `VOXORYL-Launcher.exe`
 3. From the unzipped folder:
 
 ```bash
-# Windows (PowerShell)
-powershell -ExecutionPolicy Bypass -File .\\scripts\\install.ps1
+# Windows — double-click, or:
+scripts\\Setup VOXORYL.bat
+# or:  python scripts\\setup_voxoryl.py
 
-# macOS / Linux
-chmod +x scripts/install.sh && ./scripts/install.sh
+# macOS — double-click Setup VOXORYL.command, or:
+chmod +x "scripts/Setup VOXORYL.command" && open "scripts/Setup VOXORYL.command"
+
+# Linux / headless:
+python3 scripts/setup_voxoryl.py
+# terminal-only bootstrap:
+./scripts/install.sh --cli
 ```
 
-That runs `scripts/bootstrap_voxoryl.py`: venv → deps → user-data dirs → hardware
-probe → prefer installed Ollama models → pull only what fits → launch.
+Wizard pages: Welcome → License → Location → Automatic/Custom → optional ENV keys → progress → Launch.
+Automatic mode runs `scripts/bootstrap_voxoryl.py` (venv → user-data → hardware → models → config).
 
 ### Where your data lives
 

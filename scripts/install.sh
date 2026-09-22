@@ -1,9 +1,19 @@
 #!/usr/bin/env bash
-# Zero-setup VOXORYL install (macOS / Linux).
-# Thin wrapper around scripts/bootstrap_voxoryl.py
+# VOXORYL install entry (macOS / Linux).
+# Default: Setup Wizard. Use --cli for terminal-only bootstrap.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
+
+CLI=0
+ARGS=()
+for a in "$@"; do
+  if [[ "$a" == "--cli" ]]; then
+    CLI=1
+  else
+    ARGS+=("$a")
+  fi
+done
 
 echo "==> VOXORYL install"
 if [[ "$(uname -s)" == "Darwin" ]]; then
@@ -22,4 +32,9 @@ import sys
 raise SystemExit(0 if sys.version_info >= (3, 11) else 1)
 PY
 
-exec python3 "$ROOT/scripts/bootstrap_voxoryl.py" "$@"
+if [[ "$CLI" -eq 1 ]]; then
+  exec python3 "$ROOT/scripts/bootstrap_voxoryl.py" "${ARGS[@]+"${ARGS[@]}"}"
+fi
+
+echo "    Opening Setup Wizard (pass --cli for terminal-only bootstrap)…"
+exec python3 "$ROOT/scripts/setup_voxoryl.py" "${ARGS[@]+"${ARGS[@]}"}"

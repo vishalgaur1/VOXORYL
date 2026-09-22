@@ -1269,6 +1269,7 @@ function openSettings() {
   refreshAudioDevices({ requestPermission: false });
   refreshInference();
   if (typeof refreshReelsList === "function") refreshReelsList();
+  loadConfigEnvFields();
 }
 
 function closeSettings() {
@@ -1843,6 +1844,101 @@ if (settingsSheet) {
     el.addEventListener("click", () => closeSettings());
   });
 }
+
+const configEnvFields = document.getElementById("configEnvFields");
+const configEnvStatus = document.getElementById("configEnvStatus");
+const configEnvHint = document.getElementById("configEnvHint");
+const configEnvSave = document.getElementById("configEnvSave");
+const configEnvReload = document.getElementById("configEnvReload");
+let configEnvLoaded = false;
+
+function setConfigEnvStatus(msg, show = true) {
+  if (!configEnvStatus) return;
+  configEnvStatus.textContent = msg || "";
+  configEnvStatus.hidden = !show || !msg;
+}
+
+async function loadConfigEnvFields() {
+  if (!configEnvFields) return;
+  try {
+    const res = await fetch(apiUrl("/api/config/env"));
+    const data = await res.json();
+    if (!data || !data.ok) {
+      setConfigEnvStatus("Could not load config fields.");
+      return;
+    }
+    if (configEnvHint && data.path) {
+      configEnvHint.textContent =
+        "Saved to " + data.path + " — leave blank to skip. Never stored in the git folder.";
+    }
+    const fields = data.fields || [];
+    configEnvFields.innerHTML = "";
+    let lastGroup = "";
+    for (const field of fields) {
+      const group = field.group || "Other";
+      if (group !== lastGroup) {
+        lastGroup = group;
+        const g = document.createElement("p");
+        g.className = "config-env-group";
+        g.textContent = group;
+        configEnvFields.appendChild(g);
+      }
+      const row = document.createElement("div");
+      row.className = "config-env-row";
+      const lab = document.createElement("label");
+      lab.htmlFor = "cfg_" + field.key;
+      lab.textContent = field.label || field.key;
+      const input = document.createElement("input");
+      input.type = field.secret ? "password" : "text";
+      input.id = "cfg_" + field.key;
+      input.dataset.key = field.key;
+      input.autocomplete = "off";
+      input.spellcheck = false;
+      input.placeholder = field.placeholder || "";
+      input.value = field.value || "";
+      row.appendChild(lab);
+      row.appendChild(input);
+      if (field.hint) {
+        const hint = document.createElement("p");
+        hint.className = "config-env-hint";
+        hint.textContent = field.hint;
+        row.appendChild(hint);
+      }
+      configEnvFields.appendChild(row);
+    }
+    configEnvLoaded = true;
+    setConfigEnvStatus("", false);
+  } catch (_) {
+    setConfigEnvStatus("Could not reach /api/config/env.");
+  }
+}
+
+async function saveConfigEnvFields() {
+  if (!configEnvFields) return;
+  const updates = {};
+  configEnvFields.querySelectorAll("input[data-key]").forEach((el) => {
+    updates[el.dataset.key] = el.value || "";
+  });
+  try {
+    const res = await fetch(apiUrl("/api/config/env"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ updates, only_nonempty: false }),
+    });
+    const data = await res.json();
+    if (data && data.ok) {
+      setConfigEnvStatus("Saved. Restart or reload if you changed active keys.");
+      await loadConfigEnvFields();
+    } else {
+      setConfigEnvStatus("Save failed.");
+    }
+  } catch (_) {
+    setConfigEnvStatus("Save failed — check the local server.");
+  }
+}
+
+if (configEnvSave) configEnvSave.addEventListener("click", () => saveConfigEnvFields());
+if (configEnvReload) configEnvReload.addEventListener("click", () => loadConfigEnvFields());
 
 const pinHint = document.getElementById("pinHint");
 if (pinHint) {

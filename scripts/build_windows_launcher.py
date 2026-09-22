@@ -2,8 +2,8 @@
 """
 Optional Windows one-file launcher via PyInstaller (honest P0).
 
-This is NOT a full GUI installer. It produces a small EXE that runs
-scripts/bootstrap_voxoryl.py (venv + user-data + models + launch).
+This is NOT a full GUI installer. It produces a small EXE that opens the
+Setup Wizard (scripts/setup_voxoryl.py) when available, else bootstrap.
 
 Requires: pip install pyinstaller
   python scripts/build_windows_launcher.py
@@ -24,12 +24,12 @@ SPEC_ENTRY = ROOT / "scripts" / "_voxoryl_launcher_entry.py"
 def main() -> int:
     if not shutil.which("pyinstaller") and not _has_module("PyInstaller"):
         print("PyInstaller not installed. Run: pip install pyinstaller")
-        print("Skipping build — bootstrap scripts remain the supported zero-setup path.")
+        print("Skipping build — use scripts/Setup VOXORYL.bat or setup_voxoryl.py.")
         return 1
 
     SPEC_ENTRY.write_text(
         '''\
-"""PyInstaller entry: run VOXORYL bootstrap from the frozen/sibling tree."""
+"""PyInstaller entry: open Setup Wizard (fallback: bootstrap)."""
 from __future__ import annotations
 
 import runpy
@@ -40,18 +40,24 @@ from pathlib import Path
 def main() -> None:
     if getattr(sys, "frozen", False):
         here = Path(sys.executable).resolve().parent
-        candidates = [
-            here / "scripts" / "bootstrap_voxoryl.py",
-            here / "VOXORYL" / "scripts" / "bootstrap_voxoryl.py",
-            here.parent / "scripts" / "bootstrap_voxoryl.py",
-        ]
+        roots = [here, here / "VOXORYL", here.parent]
     else:
-        candidates = [Path(__file__).resolve().parent / "bootstrap_voxoryl.py"]
+        roots = [Path(__file__).resolve().parent.parent]
 
-    target = next((p for p in candidates if p.is_file()), None)
+    names = ("setup_voxoryl.py", "bootstrap_voxoryl.py")
+    target = None
+    for root in roots:
+        for name in names:
+            cand = root / "scripts" / name
+            if cand.is_file():
+                target = cand
+                break
+        if target:
+            break
+
     if target is None:
-        print("Could not find scripts/bootstrap_voxoryl.py next to this launcher.")
-        print("Unzip the full VOXORYL release and run scripts\\\\install.ps1 instead.")
+        print("Could not find scripts/setup_voxoryl.py next to this launcher.")
+        print("Unzip the full VOXORYL release and run scripts\\\\Setup VOXORYL.bat instead.")
         sys.exit(1)
     sys.argv = [str(target), *sys.argv[1:]]
     runpy.run_path(str(target), run_name="__main__")
@@ -78,13 +84,14 @@ if __name__ == "__main__":
         str(ROOT / "build" / "launcher"),
         "--specpath",
         str(ROOT / "build" / "launcher"),
+        "--windowed",
         str(SPEC_ENTRY),
     ]
     print("Running:", " ".join(cmd))
     r = subprocess.call(cmd, cwd=str(ROOT))
     if r == 0:
         print(f"Built: {OUT.parent / 'VOXORYL-Launcher.exe'}")
-        print("Ship the EXE beside the unzipped VOXORYL folder, or prefer scripts/install.ps1.")
+        print("Ship the EXE beside the unzipped VOXORYL folder, or prefer Setup VOXORYL.bat.")
     return r
 
 

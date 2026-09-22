@@ -1166,6 +1166,107 @@ body.is-ready .shell {
   to { transform: translateY(0); opacity: 1; }
 }
 
+.settings-accordion {
+  margin: 0.35rem 0 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xs);
+  background: rgba(255, 255, 255, 0.65);
+  overflow: hidden;
+}
+.settings-accordion__summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 0.75rem 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  user-select: none;
+}
+.settings-accordion__summary::-webkit-details-marker { display: none; }
+.settings-accordion__summary span {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+.settings-accordion__summary strong {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.settings-accordion__summary small {
+  font-size: 0.62rem;
+  color: var(--muted);
+}
+.settings-accordion__summary::after {
+  content: "";
+  width: 0.45rem;
+  height: 0.45rem;
+  border-right: 1.6px solid var(--muted);
+  border-bottom: 1.6px solid var(--muted);
+  transform: rotate(45deg);
+  transition: transform 160ms ease;
+  flex-shrink: 0;
+  margin-top: -0.15rem;
+}
+.settings-accordion[open] > .settings-accordion__summary::after {
+  transform: rotate(-135deg);
+  margin-top: 0.2rem;
+}
+.settings-accordion__body {
+  padding: 0 0.85rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  border-top: 1px solid var(--line);
+}
+.config-env-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  max-height: 220px;
+  overflow: auto;
+  padding-right: 0.15rem;
+}
+.config-env-group {
+  margin: 0;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.config-env-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.config-env-row label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.config-env-row input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.78rem;
+  padding: 0.45rem 0.55rem;
+}
+.config-env-row input:focus {
+  outline: none;
+  border-color: rgba(74, 140, 255, 0.45);
+}
+.config-env-row .config-env-hint {
+  margin: 0;
+  font-size: 0.6rem;
+  color: var(--muted-soft);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .atmosphere__waves,
   .atmosphere__glow,

@@ -1,13 +1,15 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-  Zero-setup VOXORYL install (Windows).
+  VOXORYL install entry (Windows).
 
 .DESCRIPTION
-  Thin wrapper around scripts/bootstrap_voxoryl.py — creates venv, deps,
-  OS user-data under %LOCALAPPDATA%\VOXORYL, picks/pulls a fitting Ollama
-  model, then launches the voice widget.
+  Prefers the Setup Wizard (scripts/setup_voxoryl.py). Pass -Cli to skip the GUI
+  and run scripts/bootstrap_voxoryl.py directly (CI / headless).
 #>
+param(
+  [switch]$Cli
+)
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
 Set-Location $Root
@@ -26,15 +28,19 @@ if (-not $py) {
   exit 1
 }
 
-# Prefer `py -3.12` / `py -3.11` when available
+$script = if ($Cli) { "$Root\scripts\bootstrap_voxoryl.py" } else { "$Root\scripts\setup_voxoryl.py" }
+if (-not $Cli) {
+  Write-Host "Opening Setup Wizard (use -Cli for terminal-only bootstrap)…" -ForegroundColor Cyan
+}
+
 if ($py -eq "py") {
   & py -3 -c "import sys; raise SystemExit(0 if sys.version_info >= (3,11) else 1)" 2>$null
   if ($LASTEXITCODE -ne 0) {
     Write-Host "Need Python 3.11+. Current launcher is too old." -ForegroundColor Red
     exit 1
   }
-  & py -3 "$Root\scripts\bootstrap_voxoryl.py" @args
+  & py -3 $script @args
 } else {
-  & python "$Root\scripts\bootstrap_voxoryl.py" @args
+  & python $script @args
 }
 exit $LASTEXITCODE
