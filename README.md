@@ -267,7 +267,7 @@ See [`.env.example`](.env.example) for the full list.
 voxoryl/           # Python package (API, agents, tools, static UI)
 scripts/           # Launchers, probes, packaging
 setup/             # Example configs + bootstrap templates
-docs/              # Site, assets, packages notes, PRD
+docs/              # Site, assets, packages notes, wiki sources, PRD
 tests/             # Smoke tests
 .github/workflows/ # Releases + GHCR package publish
 Dockerfile         # ghcr.io/vishalgaur1/voxoryl
